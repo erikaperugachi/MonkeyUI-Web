@@ -1,0 +1,28 @@
+{
+  "name": "monkeyui",
+  "homepage": "https://criptext.com/monkey",
+  "authors": [
+    "Criptext"
+  ],
+  "description": "UI Library of bubbles for your chat",
+  "main": "ChatUI.js",
+  "moduleType": [],
+  "keywords": [
+    "messaging",
+    "bubble",
+    "criptext",
+    "monkey"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "font-awesome": "fontawesome#^4.5.0",
+    "fileapi": "^2.0.20"
+  }
+}
