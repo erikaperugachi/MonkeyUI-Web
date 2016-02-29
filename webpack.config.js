@@ -3,8 +3,8 @@ var path = require('path');
 module.exports = { 
   entry: './ChatUI.js',
   output: {
-    filename: 'monkeyui.js',
-    library: "monkeyui"
+    filename: 'monkeyUI.js',
+    library: "monkeyUI"
   },
    externals: {
       monkey:"monkey"
@@ -12,13 +12,14 @@ module.exports = {
   },
    module: {
       loaders: [
-          // { test: /ChatUI\.js$/,
-          //   loader: 'babel-loader',
-          //   exclude: /node_modules/,
-          //   query: {
-          //     presets: ['es2015']
-          //   }
-          // },
+          //{ test: /ChatUI\.js$/,
+          { test: /(MUIConversation\.js|MUIMessage\.js|MUIUser\.js|ChatUI\.js)$/,
+            loader: 'babel-loader',
+            exclude: /node_modules/,
+            query: {
+              presets: ['es2015']
+            }
+          },
           {
             test: /\.css$/,
             loader: 'style!css?sourceMap'
