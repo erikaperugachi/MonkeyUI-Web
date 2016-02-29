@@ -45,7 +45,7 @@ var timestampPrev;
 
 var inputConf = {}
 
-var chatUI = new function(){}
+var chatUI = new function(){
     this.wrapperOut = '.wrapper-out';
     this.wrapperIn = '.wrapper-in';
     this.contentConnection = '#content-connection';

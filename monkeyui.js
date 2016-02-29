@@ -49,8 +49,8 @@ var monkeyui =
 	__webpack_require__(11);
 
 
-	if (!window.chatUI) 
-	    var chatUI = new ChatUI();
+	// if (!window.chatUI) 
+	//     var chatUI = new ChatUI();
 
 	// Variable to store the file to send
 	var fileCaptured = {}; // save files
@@ -92,7 +92,7 @@ var monkeyui =
 
 	var inputConf = {}
 
-	function ChatUI(){
+	var chatUI = new function(){
 	    this.wrapperOut = '.wrapper-out';
 	    this.wrapperIn = '.wrapper-in';
 	    this.contentConnection = '#content-connection';
@@ -1867,37 +1867,37 @@ var monkeyui =
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "32400f4e08932a94d8bfd2422702c446.eot";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.eot";
 
 /***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "32400f4e08932a94d8bfd2422702c446.eot";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.eot";
 
 /***/ },
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "db812d8a70a4e88e888744c1c9a27e89.woff2";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.woff2";
 
 /***/ },
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "a35720c2fed2c7f043bc7e4ffb45e073.woff";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.woff";
 
 /***/ },
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "a3de2170e4e9df77161ea5d3f31b2668.ttf";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.ttf";
 
 /***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "f775f9cca88e21d45bebe185b27c0e5b.svg";
+	module.exports = __webpack_require__.p + "fontawesome-webfont.svg";
 
 /***/ },
 /* 10 */
