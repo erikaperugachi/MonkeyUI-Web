@@ -2,8 +2,8 @@ require('./bower_components/font-awesome/css/font-awesome.min.css');
 require('./bower_components/fileapi//dist/FileAPI.min.js');
 
 
-if (!window.chatUI) 
-    var chatUI = new ChatUI();
+// if (!window.chatUI) 
+//     var chatUI = new ChatUI();
 
 // Variable to store the file to send
 var fileCaptured = {}; // save files
@@ -45,7 +45,7 @@ var timestampPrev;
 
 var inputConf = {}
 
-function ChatUI(){
+var chatUI = new function(){}
     this.wrapperOut = '.wrapper-out';
     this.wrapperIn = '.wrapper-in';
     this.contentConnection = '#content-connection';
