@@ -1,9 +1,13 @@
 require('./bower_components/font-awesome/css/font-awesome.min.css');
 require('./bower_components/fileapi//dist/FileAPI.min.js');
 
+import MUIUser from './libs/MUIUser.js';
+import MUIConversation from './libs/MUIConversation.js';
+import MUIMessage from './libs/MUIMessage.js';
 
-// if (!window.chatUI) 
-//     var chatUI = new ChatUI();
+window.MUIUser = MUIUser;
+window.MUIConversation = MUIConversation;
+window.MUIMessage = MUIMessage;
 
 // Variable to store the file to send
 var fileCaptured = {}; // save files
@@ -45,7 +49,7 @@ var timestampPrev;
 
 var inputConf = {}
 
-var chatUI = new function(){
+var monkeyUI = new function(){
     this.wrapperOut = '.wrapper-out';
     this.wrapperIn = '.wrapper-in';
     this.contentConnection = '#content-connection';
@@ -68,20 +72,11 @@ var chatUI = new function(){
     this.screen.width = undefined;
     this.screen.height = undefined;
 
-    this.setChat = function(conf){
-
-        this.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
-        this.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
-        this.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
-        this.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
-        this.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
-        this.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
-        this.screen.width = conf.screen.width;
-        this.screen.height = conf.screen.height;
-    }
+    this.setChat = setChat;
 
     this.drawScene = function(content){
         if( $('.wrapper-out').length <= 0 ){
+            var _scene = '';
             if(this.screen.width != undefined && this.screen.height != undefined){
                 _scene = '<div class="wrapper-out '+this.screen.mode+'" style="width: '+this.screen.width+'; height:'+this.screen.height+';">'+
                             '<div class="content-options">'+
@@ -311,9 +306,9 @@ var chatUI = new function(){
                     return true;
                 }else{
                     var _messageText = $('#message-text-input').val().trim();
-                    $(chatUI).trigger('textMessage', _messageText);
+                    $(monkeyUI).trigger('textMessage', _messageText);
                     $('#message-text-input').val("");
-                    chatUI.showChatInput();
+                    monkeyUI.showChatInput();
                     return false;
                 }
             }else{
@@ -330,15 +325,15 @@ var chatUI = new function(){
             switch(typeMessageToSend){
                 case 1:
                     var _messageText = $('#message-text-input').val().trim();
-                    $(chatUI).trigger('textMessage', _messageText);
+                    $(monkeyUI).trigger('textMessage', _messageText);
                     $('#message-text-input').val("");
-                    chatUI.showChatInput();
+                    monkeyUI.showChatInput();
                     break;
                 case 2:
                     $('#attach-file').val('');
                     $('#preview-image').remove();
                     hideChatInputFile();
-                    $(chatUI).trigger('fileMessage', fileCaptured);
+                    $(monkeyUI).trigger('fileMessage', fileCaptured);
                     
                     break;
                 case 3:
@@ -346,7 +341,7 @@ var chatUI = new function(){
                         mediaRecorder.stop(); //detiene la grabacion del audio
                     }
                     audioCaptured.duration = totalSeconds;
-                    chatUI.showChatInput();
+                    monkeyUI.showChatInput();
                     buildAudio();
                     mediaRecorder = null;
                     break;
@@ -383,7 +378,7 @@ var chatUI = new function(){
         });
 
         $('#button-cancel-audio').click(function(){
-            chatUI.showChatInput();
+            monkeyUI.showChatInput();
 
             var audio = document.getElementById('audio_'+timestampPrev);
             if (audio != null)
@@ -651,7 +646,7 @@ var chatUI = new function(){
         _messagePoint.addClass('bubble-image');
         _messagePoint.addClass(_classTypeBubble);
 
-        var _content = '<div class="content-image" onclick="chatUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
+        var _content = '<div class="content-image" onclick="monkeyUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
                             '<img src='+_dataSource+'>'+
                         '</div>';
         _messagePoint.append(_content);
@@ -682,8 +677,8 @@ var chatUI = new function(){
             _messagePoint.addClass(_classTypeBubble);
         }
         var _content = '<div class="content-audio disabled">'+
-                            '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="chatUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
-                            '<img id="pauseAudioBubbleImg'+message.id+'" onclick="chatUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
+                            '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="monkeyUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
+                            '<img id="pauseAudioBubbleImg'+message.id+'" onclick="monkeyUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
                             '<input id="play-player_'+message.id+'" class="knob second" data-width="100" data-displayPrevious=true value="0">'+
                             '<div class="bubble-audio-timer"><span id="minutesBubble'+message.id+'">00</span><span>:</span><span id="secondsBubble'+message.id+'">00</span></div>'+
                         '</div>'+
@@ -837,7 +832,7 @@ var chatUI = new function(){
                 }
                         _bubble += '<span class="message-hour">'+defineTime(message.timestamp*1000)+'</span>'+
                                     '</div>'+
-                                    '<div class="content-image" onclick="chatUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
+                                    '<div class="content-image" onclick="monkeyUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
                                       '<img src='+_dataSource+'>'+
                                     '</div>'+
                                 '</div>'+
@@ -875,7 +870,7 @@ var chatUI = new function(){
                                             '</div>'+
                                         '</div>'+
                                         '<div class="button-message-unsend" onclick="unsendMessage(\''+message.id+'\',\''+conversationId+'\')">x</div>'+
-                                        '<div class="content-image" onclick="chatUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
+                                        '<div class="content-image" onclick="monkeyUI.showViewer(\''+message.id+'\',\''+_fileName+'\')">'+
                                             '<img src="'+_dataSource+'">'+
                                         '</div>'+
                                     '</div>'+
@@ -925,8 +920,8 @@ var chatUI = new function(){
                         _bubble += '<span class="message-hour">'+defineTime(message.timestamp*1000)+'</span>'+
                                     '</div>'+
                                     '<div class="content-audio">'+
-                                        '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="chatUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
-                                        '<img id="pauseAudioBubbleImg'+message.id+'" onclick="chatUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
+                                        '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="monkeyUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
+                                        '<img id="pauseAudioBubbleImg'+message.id+'" onclick="monkeyUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
                                         '<input id="play-player_'+message.id+'" class="knob second" data-width="100" data-displayPrevious=true value="0">'+
                                         '<div class="bubble-audio-timer"><span id="minutesBubble'+message.id+'">'+("0" + parseInt(message.length/60)).slice(-2)+'</span><span>:</span><span id="secondsBubble'+message.id+'">'+("0" + message.length%60).slice(-2)+'</span></div>'+
                                     '</div>';
@@ -973,8 +968,8 @@ var chatUI = new function(){
                                     '</div>'+
                                     '<div class="button-message-unsend" onclick="unsendMessage(\''+message.id+'\',\''+conversationId+'\')">x</div>'+
                                     '<div class="content-audio">'+
-                                        '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="chatUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
-                                        '<img id="pauseAudioBubbleImg'+message.id+'" onclick="chatUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
+                                        '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="monkeyUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
+                                        '<img id="pauseAudioBubbleImg'+message.id+'" onclick="monkeyUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
                                         '<input id="play-player_'+message.id+'" class="knob second" data-width="100" data-displayPrevious=true value="0">'+
                                         '<div class="bubble-audio-timer"><span id="minutesBubble'+message.id+'">00</span><span>:</span><span id="secondsBubble'+message.id+'">00</span></div>'+
                                     '</div>'+
@@ -1028,7 +1023,7 @@ var chatUI = new function(){
     function drawAudioMessageBubbleTemporal(dataSource, message, duration){
         $('#chat-timeline').find('.appear').append(baseBubble(message, 1, false, 0));
         var _classTypeBubble = 'bubble-audio-out';
-        _messagePoint = $('#'+message.id);
+        var _messagePoint = $('#'+message.id);
         _messagePoint.addClass('bubble-audio');
         _messagePoint.addClass(_classTypeBubble);
 
@@ -1077,7 +1072,7 @@ var chatUI = new function(){
             var params = _onClickAttribute.split(',');
             var _fileName = params[1].substr(1,params[1].length-3);
             messagePoint.find('.content-image').attr({
-              onclick: "chatUI.showViewer('"+messageNewId+"','"+_fileName+"')"
+              onclick: "monkeyUI.showViewer('"+messageNewId+"','"+_fileName+"')"
             });
         }
         
@@ -1125,7 +1120,7 @@ var chatUI = new function(){
         secondsBubbleLabel = document.getElementById("secondsBubble"+timestamp);
         audiobuble = document.getElementById("audio_"+timestamp);
         audiobuble.play();
-        playIntervalBubble = setInterval("chatUI.updateAnimationBuble()",1000);
+        playIntervalBubble = setInterval("monkeyUI.updateAnimationBuble()",1000);
         audiobuble.addEventListener("ended",function() {
             setDurationTime(timestamp);
             //this.load();
@@ -1189,12 +1184,12 @@ var chatUI = new function(){
 
         var _html = '<div class="viewer-content">'+
             '<div class="viewer-toolbar">'+
-                '<button id="button-exit" onclick="chatUI.exitViewer()"> X </button>'+
+                '<button id="button-exit" onclick="monkeyUI.exitViewer()"> X </button>'+
                 '<a href="'+_file+'" download="'+fileName+'" >'+
                     '<button class="button-download" title="Download">Download</button>'+
                 '</a>'+
                 // '<a href="'+_file+'" >'+
-                    '<button class="button-download" title="Download" onclick="chatUI.printFile()" >Print</button>'+
+                    '<button class="button-download" title="Download" onclick="monkeyUI.printFile()" >Print</button>'+
                 // '</a>'+
             '</div>'+
             '<div id="file_viewer_image" class="viewer-image">'+
@@ -1241,7 +1236,7 @@ var chatUI = new function(){
                 var html = '<div id="preview-image">'+
                       '<div class="preview-head">'+
                         '<div class="preview-title">Preview</div> '+
-                        '<div id="close-preview-image" class="preview-close" onclick="chatUI.closeImagePreview(this)">X</div>'+
+                        '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
                       '</div>'+
                       '<div class="preview-container">'+
                         '<img id="image_preview" src="'+fileCaptured.src+'">'+
@@ -1344,18 +1339,18 @@ var chatUI = new function(){
         ffmpegRunning = true;
         var fileNameExt = fileName.substr(fileName.lastIndexOf('.') + 1);
         var outFileName = fileName.substr(0, fileName.lastIndexOf('.')) + "." + "mp3";
-        var arguments = [];
-        arguments.push("-i");
-        arguments.push(fileName);
-        arguments.push("-b:a");
-        arguments.push('128k');
-        arguments.push("-acodec");
-        arguments.push("libmp3lame");
-        arguments.push("out.mp3");
+        var _arguments = [];
+        _arguments.push("-i");
+        _arguments.push(fileName);
+        _arguments.push("-b:a");
+        _arguments.push('128k');
+        _arguments.push("-acodec");
+        _arguments.push("libmp3lame");
+        _arguments.push("out.mp3");
 
         ffmpegWorker.postMessage({
             type: "command",
-            arguments: arguments,
+            arguments: _arguments,
             files: [{
                     "name": fileName,
                     "buffer": fileBuffer
@@ -1381,7 +1376,7 @@ var chatUI = new function(){
 
                     var outFileName = outFileNames[0];
                     var outFileBuffer = message.data.outputFiles[outFileName];
-                    mp3Blob = new Blob([outFileBuffer]);
+                    var mp3Blob = new Blob([outFileBuffer]);
                     // var src = window.URL.createObjectURL(mp3Blob);
                     readData(mp3Blob);
                 } else {
@@ -1403,7 +1398,7 @@ var chatUI = new function(){
                 audioCaptured.src = 'data:audio/mpeg;base64,'+_data;
                 audioCaptured.monkeyFileType = 1;
                 audioCaptured.oldId = audioMessageOldId;
-                $(chatUI).trigger('audioMessage', audioCaptured);
+                $(monkeyUI).trigger('audioMessage', audioCaptured);
             } else if( evt.type =='progress' ){
                 var pr = evt.loaded/evt.total * 100;
             } else {/*Error*/}
@@ -1457,124 +1452,34 @@ var chatUI = new function(){
         }
         var _exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i;
         message = message.replace(_exp,"<a href='$1' target='_blank'>$1</a>");
-        replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-        message = message.replace(replacePattern2, '$1<a href="http://$2" target="_blank" >$2</a>');
-        replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
-        message = message.replace(replacePattern3, '<a href="mailto:$1" target="_blank">$1</a>');
+        var _replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        message = message.replace(_replacePattern2, '$1<a href="http://$2" target="_blank" >$2</a>');
+        var _replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+        message = message.replace(_replacePattern3, '<a href="mailto:$1" target="_blank">$1</a>');
 
         return message;
     }
+}();
+
+function setChat(conf){
+    monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
+    monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
+    monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
+    monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
+    monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
+    monkeyUI.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
+    monkeyUI.screen.width = conf.screen.width;
+    monkeyUI.screen.height = conf.screen.height;
 }
 
-// ChatUI.protocolType.defineDiv = function(wrapperOut, wrapperIn, contentConversationList, contentConversationWindow){
+
+
+// monkeyUI.protocolType.defineDiv = function(wrapperOut, wrapperIn, contentConversationList, contentConversationWindow){
 //     this.wrapperOut = wrapperOut;
 //     this.wrapperIn = wrapperIn;
 //     this.contentConversationList = contentConversationList;
 //     this.contentConversationWindow = contentConversationWindow;
 // }
-
-/**
-   * A representation of a user.
-   *
-   * @class User
-   * @constructor
-   * @param {int}       id To identify the user.
-   * @param {String}    monkeyId To identify the user on monkey
-   * @param {String}    name A name to be displayed as the author of the message.
-   */
-  
-function User(id, monkeyId, name, privacy, urlAvatar, isFriend){
-
-    if(id != undefined){
-        this.id = id;
-    }
-    
-    this.monkeyId = monkeyId;
-    this.name = name;
-    this.privacy = privacy;
-    this.urlAvatar = urlAvatar;
-    this.isFriend = isFriend;
-}
-
-/**
-   * A representation of a conversation.
-   *
-   * @class Conversation
-   * @constructor
-   * @param {int}       id To identify the conversation.
-   * @param {Object}    info A data about group conversation
-   */
-
-function Conversation(id, name, urlAvatar, members){
-    this.id = id;
-    this.lastMessage = null;
-    this.unreadMessageCount = 0;
-    this.name = name;
-    this.urlAvatar = urlAvatar;
-    this.members = members;
-
-    this.setLastOpenMe = function(lastOpenMe){
-        this.lastOpenMe = lastOpenMe;
-    }
-}
-
-/**
-   * A representation of a message.
-   *
-   * @class Message
-   * @constructor
-   * @param {MOKMessage} mokMessage recevived by Monkey.
-   */
-  
-function Message(mokMessage) {
-
-    this.id = mokMessage.id;
-    this.protocolType = mokMessage.protocolType;
-    this.senderId = mokMessage.senderId;
-    this.timestamp = mokMessage.datetimeCreation;
-    //this.encryptedText = mokMessage.encryptedText;
-    this.text = mokMessage.text;
-    this.recipientId = mokMessage.recipientId;
-
-    if(mokMessage.params){ 
-        this.length = mokMessage.params.length;
-    }else{
-        this.length = 15;
-    }
-    
-    this.typeFile = mokMessage.props.file_type;
-    this.encr = mokMessage.props.encr;
-    this.cmpr = mokMessage.props.cmpr;
-    this.ext = mokMessage.props.ext;
-    this.eph = mokMessage.params.eph == undefined ? 0 : mokMessage.params.eph;
-
-    this.senderName = undefined;
-    this.senderColor = undefined;
-
-    this.setDataSource = function(dataSource){
-        this.dataSource = dataSource;
-    }
-
-    this.isEncrypted = function(){
-        return this.encr == 1 ? true : false;
-    }
-
-    this.isCompressed = function(){
-        return this.cmpr != undefined ? true : false;
-    }
-
-    this.compressionMethod = function(){
-        return this.cmpr;
-    }
-}
-
-Message.prototype.setSenderName = function(senderName){
-     this.senderName = senderName;
-}
-
-Message.prototype.setSenderColor = function(senderColor){
-     this.senderColor = senderColor;
-}
 
 
 
@@ -1710,12 +1615,5 @@ function getConversationIdHandling(conversationId){
     return result;
 }
 
-module.exports = getConversationIdHandling;
-module.exports = defineTime;
-module.exports = defineTimer;
-module.exports = drawFileTypeIntoBubble;
-module.exports = drawAttachMessageBubble;
-module.exports = Message;
-module.exports = Conversation;
-module.exports = User;
-module.exports = ChatUI;
+module.exports = monkeyUI;
+
