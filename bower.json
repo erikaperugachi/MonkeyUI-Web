@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "font-awesome": "fontawesome#^4.5.0",
-    "fileapi": "^2.0.20"
+    "fileapi": "^2.0.20",
+    "jquery-knob": "~1.2.13"
   }
 }

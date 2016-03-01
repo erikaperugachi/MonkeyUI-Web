@@ -1,8 +1,9 @@
-//var webpack = require("webpack");
 var path = require('path');
 module.exports = { 
-  entry: './ChatUI.js',
+  entry: path.join(__dirname, './ChatUI.js'),
   output: {
+    path: path.join(__dirname, 'dist'),
+    //publicPath: "http://localhost:8080/chat",
     filename: 'monkeyUI.js',
     library: "monkeyUI"
   },
@@ -12,7 +13,6 @@ module.exports = {
   },
    module: {
       loaders: [
-          //{ test: /ChatUI\.js$/,
           { test: /(MUIConversation\.js|MUIMessage\.js|MUIUser\.js|ChatUI\.js)$/,
             loader: 'babel-loader',
             exclude: /node_modules/,

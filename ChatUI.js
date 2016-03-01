@@ -1,5 +1,6 @@
 require('./bower_components/font-awesome/css/font-awesome.min.css');
-require('./bower_components/fileapi//dist/FileAPI.min.js');
+require('./bower_components/fileapi/dist/FileAPI.min.js');
+require('./bower_components/jquery-knob/dist/jquery.knob.min.js');
 
 import MUIUser from './libs/MUIUser.js';
 import MUIConversation from './libs/MUIConversation.js';
