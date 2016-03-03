@@ -55,7 +55,7 @@ function MediaStreamRecorder(mediaStream) {
     // Reference to "MediaRecorder.js"
     var mediaRecorder;
 }
-
+module.exports.MediaStreamRecorder = MediaStreamRecorder;
 // below scripts are used to auto-load required files.
 
 function loadScript(src, onload) {
@@ -258,7 +258,7 @@ function MediaRecorderWrapper(mediaStream) {
     // Reference to "MediaRecorderWrapper" object
     var mediaRecorder;
 }
-
+module.exports.MediaRecorderWrapper = MediaRecorderWrapper;
 // =================
 // StereoRecorder.js
 
@@ -290,7 +290,7 @@ function StereoRecorder(mediaStream) {
     var mediaRecorder;
     var timeout;
 }
-
+module.exports.StereoRecorder = StereoRecorder;
 // ======================
 // StereoAudioRecorder.js
 

@@ -1,9 +1,9 @@
 var path = require('path');
 module.exports = { 
-  entry: path.join(__dirname, './ChatUI.js'),
+  entry: path.join(__dirname, './main.js'),
   output: {
     path: path.join(__dirname, 'dist'),
-    //publicPath: "http://localhost:8080/chat",
+    publicPath: "dist/",
     filename: 'monkeyUI.js',
     library: "monkeyUI"
   },
@@ -13,7 +13,7 @@ module.exports = {
   },
    module: {
       loaders: [
-          { test: /(MUIConversation\.js|MUIMessage\.js|MUIUser\.js|ChatUI\.js)$/,
+          { test: /(MUIConversation\.js|MUIMessage\.js|MUIUser\.js|main\.js)$/,
             loader: 'babel-loader',
             exclude: /node_modules/,
             query: {
