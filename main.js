@@ -1,11 +1,19 @@
 require('./bower_components/font-awesome/css/font-awesome.min.css');
 require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/dist/jquery.knob.min.js');
+//require('./src/jquery.knob.min.js');
 
 import MUIUser from './libs/MUIUser.js';
 import MUIConversation from './libs/MUIConversation.js';
 import MUIMessage from './libs/MUIMessage.js';
 
+// =================
+// MediaStreamRecorder.js
+var MediaStreamRecorder = require('./src/MediaStreamRecorder.js').MediaStreamRecorder;
+window.StereoRecorder = require('./src/MediaStreamRecorder.js').StereoRecorder;
+
+// =================
+// MUI*.js
 window.MUIUser = MUIUser;
 window.MUIConversation = MUIConversation;
 window.MUIMessage = MUIMessage;
@@ -48,6 +56,9 @@ var globalAudioPreview;
 
 var timestampPrev;
 
+// Variable to send message
+var typeMessageToSend; // text:1 || image:2 || audio:3
+
 var inputConf = {}
 
 var monkeyUI = new function(){
@@ -73,7 +84,16 @@ var monkeyUI = new function(){
     this.screen.width = undefined;
     this.screen.height = undefined;
 
-    this.setChat = setChat;
+    this.setChat = function(conf){
+        monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
+        monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
+        monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
+        monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
+        monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
+        monkeyUI.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
+        monkeyUI.screen.width = conf.screen.width;
+        monkeyUI.screen.height = conf.screen.height;
+    }
 
     this.drawScene = function(content){
         if( $('.wrapper-out').length <= 0 ){
@@ -1461,17 +1481,6 @@ var monkeyUI = new function(){
         return message;
     }
 }();
-
-function setChat(conf){
-    monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
-    monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
-    monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
-    monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
-    monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
-    monkeyUI.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
-    monkeyUI.screen.width = conf.screen.width;
-    monkeyUI.screen.height = conf.screen.height;
-}
 
 
 
