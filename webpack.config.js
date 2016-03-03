@@ -40,6 +40,11 @@ module.exports = {
             loader: "url?name=[name].[ext]&limit=10000&mimetype=image/svg+xml"
           }
       ]
+  },
+  worker: {
+    output: {
+      filename: "ffmpeg.worker.js",
+      chunkFilename: "[id].ffmpeg.worker.js"
+    }
   }
 };
-
