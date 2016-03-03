@@ -67,15 +67,19 @@ var monkeyUI =
 	//require('./src/jquery.knob.min.js');
 
 	// =================
+	// MUI*.js
+	window.MUIUser = _MUIUser2.default;
+	window.MUIConversation = _MUIConversation2.default;
+	window.MUIMessage = _MUIMessage2.default;
+
+	// =================
 	// MediaStreamRecorder.js
 	var MediaStreamRecorder = __webpack_require__(18).MediaStreamRecorder;
 	window.StereoRecorder = __webpack_require__(18).StereoRecorder;
 
 	// =================
-	// MUI*.js
-	window.MUIUser = _MUIUser2.default;
-	window.MUIConversation = _MUIConversation2.default;
-	window.MUIMessage = _MUIMessage2.default;
+	// ffmpegWorker.js
+	var Worker = __webpack_require__(19);
 
 	// Variable to store the file to send
 	var fileCaptured = {}; // save files
@@ -158,7 +162,7 @@ var monkeyUI =
 	        if ($('.wrapper-out').length <= 0) {
 	            var _scene = '';
 	            if (this.screen.width != undefined && this.screen.height != undefined) {
-	                _scene = '<div class="wrapper-out ' + this.screen.mode + '" style="width: ' + this.screen.width + '; height:' + this.screen.height + ';">' + '<div class="content-options">' + '<a id="w-preview"><span><i class="fa fa-sort-down"></i></span></a>' + '<a><span><i class="fa fa-times"></i></span></a>' + '</div>';
+	                _scene = '<div class="wrapper-out ' + this.screen.mode + '" style="width: ' + this.screen.width + '; height:' + this.screen.height + ';">';
 	            } else {
 	                _scene = '<div class="wrapper-out ' + this.screen.mode + '">';
 	            }
@@ -173,28 +177,10 @@ var monkeyUI =
 	        } else {
 	            $('.wrapper-out').addClass(this.screen.mode);
 	        }
-	        initScreenFunctionality(this.screen.height);
 	        drawHeaderUserSession(this.contentApp + ' aside');
 	        drawContentConversation(this.contentConversationWindow);
 	        drawInput(this.contentConversationWindow, this.input);
 	    };
-
-	    function initScreenFunctionality(height) {
-	        $("#w-preview").click(function () {
-	            //$(".wrapper-in").toggle(1000);
-	            if ($(this).find('.fa-sort-down').length > 0) {
-	                $('.wrapper-in').addClass('disappear');
-	                $('.wrapper-out').css('height', '25px');
-	                $('#w-preview i').removeClass('fa-sort-down');
-	                $('#w-preview i').addClass('fa-sort-up');
-	            } else {
-	                $('.wrapper-in').removeClass('disappear');
-	                $('.wrapper-out').css('height', height);
-	                $('#w-preview i').removeClass('fa-sort-up');
-	                $('#w-preview i').addClass('fa-sort-down');
-	            }
-	        });
-	    }
 
 	    function drawLoading(contentConnection) {
 	        var _html = '<div class="spinner">' + '<div class="bounce1"></div>' + '<div class="bounce2"></div>' + '<div class="bounce3"></div>' + '</div>';
@@ -1223,7 +1209,7 @@ var monkeyUI =
 	    }
 
 	    function getFFMPEGWorker() {
-	        var ffmpegWorker = new Worker('/scripts/ffmpegWorker.js');
+	        var ffmpegWorker = new Worker();
 	        ffmpegWorker.addEventListener('message', function (event) {
 	            var message = event.data;
 
@@ -13209,6 +13195,14 @@ var monkeyUI =
 	    return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
 	}
 
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function() {
+		return new Worker(__webpack_require__.p + "ffmpeg.worker.js");
+	};
 
 /***/ }
 /******/ ]);
