@@ -1,6 +1,10 @@
 require('./bower_components/font-awesome/css/font-awesome.min.css');
 require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/dist/jquery.knob.min.js');
+
+require('jquery.filer/js/jquery.filer.min.js');
+require('jquery.filer/css/jquery.filer.css');
+
 //require('./src/jquery.knob.min.js');
 
 import MUIUser from './libs/MUIUser.js';
@@ -210,22 +214,23 @@ var monkeyUI = new function(){
         var _html = '<div id="chat-input">'+
             '<div id="divider-chat-input"></div>';
             if (input.isAttachButton) {
-                _html = _html + '<div class="button-input">'+
-                                    '<button id="button-attach-file" class="button-icon"></button>'+
-                                    '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">'+
-                                '</div>';
+                _html += '<div class="button-input">'+
+                            '<button id="button-attach-file" class="button-icon"></button>'+
+                            '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">'+
+                        '</div>'+
+                        '<div class="'+monkeyUI.screen.mode+' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
             }
             
             if (input.isAudioButton) {
-                _html = _html + '<div class="button-input">'+
+                _html += '<div class="button-input">'+
                                     '<button id="button-cancel-audio" class="button-icon"></button>'+
                                 '</div>';
             }
             
-            _html = _html + '<textarea id="message-text-input" class="textarea-input" placeholder="Write a secure message"></textarea>';
+            _html += '<textarea id="message-text-input" class="textarea-input" placeholder="Write a secure message"></textarea>';
             
             if (input.isAudioButton) {
-                _html = _html + '<div id="record-area" class="disappear">'+
+                _html += '<div id="record-area" class="disappear">'+
                                     '<div class="record-preview-area">'+
                                         '<div id="button-action-record">'+
                                             '<button id="button-start-record"></button>'+
@@ -236,24 +241,24 @@ var monkeyUI = new function(){
             }
 
             if (input.isSendButton) {
-                _html = _html + '<div class="button-input">'+
+                _html += '<div class="button-input">'+
                                     '<button id="button-send-message" class="button-icon"></button>'+
                                 '</div>';
             }
             
             if (input.isAudioButton) {
-                _html = _html + '<div class="button-input">'+
+                _html += '<div class="button-input">'+
                                     '<button id="button-record-audio" class="button-icon"></button>'+
                                 '</div>';
             } 
 
             if (input.isEphemeralButton) {
-                _html = _html + '<div class="button-input">'+
+                _html += '<div class="button-input">'+
                                     '<button id="button-send-ephemeral" class="button-icon timer_icon"></button>'+
                                 '</div>';
             }
             
-        _html = _html + '</div>';
+        _html += '</div>';
         $(content).append(_html);
         initInputFunctionality();
     }
@@ -358,21 +363,8 @@ var monkeyUI = new function(){
         });
 
         $('#attach-file').on('change', function (e) {
-            showChatInputFile();
-            
-            fileCaptured.file = e.target.files[0];
-            fileCaptured.ext = getExtention(fileCaptured.file);
-
-            var _fileType = checkExtention(fileCaptured.file);
-            if ((_fileType >= 1) && (_fileType <= 4)) {
-                fileCaptured.monkeyFileType = 4;
-            }else if ((_fileType == 6)) {
-                fileCaptured.monkeyFileType = 3;
-                showPreviewImage();
-                return ;
-            }else{
-                return false;
-            }
+            //showChatInputFile();
+            catchUpFile(e.target.files[0]);
         });
 
         $('#button-record-audio').click(function () {
@@ -387,15 +379,82 @@ var monkeyUI = new function(){
             if (audio != null)
                 audio.pause();
         });
+
+        $("#attach-file").filer({
+            limit: null,
+            maxSize: null,
+            extensions: null,
+            changeInput: '<div class="chat-drop-zone" ></div>',
+            showThumbs: true,
+            theme: "dragdropbox",
+            dragDrop: {
+                dragEnter: function () {
+                    console.log('file entered');
+                    $('.jFiler-input-dragDrop').show();
+                },
+                dragLeave: function () {
+                    console.log('file entered');
+                    $('.chat-drop-zone').hide();
+                    $('.jFiler-input-dragDrop').hide();
+                },
+                drop: function () {
+                    console.log('file entered');
+                    $('.chat-drop-zone').hide();
+                    $('.jFiler-input-dragDrop').hide();
+                },
+            },
+            files: null,
+            addMore: false,
+            clipBoardPaste: true,
+            excludeName: null,
+            beforeRender: null,
+            afterRender: null,
+            beforeShow: null,
+            beforeSelect: null,
+            onSelect: function(obj) {
+                // showChatInputFile();
+                catchUpFile(obj)
+            },
+            afterShow: null,
+            onEmpty: null,
+            options: null,
+            captions: {
+                drop: "Drop file here to Upload"
+            }
+        });
+    }
+
+    document.addEventListener("dragenter", function( event ) {
+           // alert('ddd');
+        console.log('over document')
+        $(document).find('.chat-drop-zone').show();
+    });
+
+    function catchUpFile(file) {
+        typeMessageToSend = 2;
+        fileCaptured.file = file;
+        console.log(fileCaptured.file)
+        fileCaptured.ext = getExtention(fileCaptured.file);
+
+        var _fileType = checkExtention(fileCaptured.file);
+        if (_fileType >= 1 && _fileType <= 4) {
+            fileCaptured.monkeyFileType = 4;
+        } else if (_fileType == 6) {
+            fileCaptured.monkeyFileType = 3;
+            showPreviewImage();
+            return;
+        } else {
+            return false;
+        }
     }
 
     function showChatInputFile(){
         typeMessageToSend = 2;
-        $("#chat-input").addClass('chat-input-file');
-        $('#button-attach-file').parent().addClass("disappear");
-        $('#button-record-audio').parent().addClass("disappear");
-        $('#button-send-message').parent().removeClass("disappear");
-        $('#button-send-ephemeral').addClass('enable_timer');
+        // $("#chat-input").addClass('chat-input-file');
+        // $('#button-attach-file').parent().addClass("disappear");
+        // $('#button-record-audio').parent().addClass("disappear");
+        // $('#button-send-message').parent().removeClass("disappear");
+        // $('#button-send-ephemeral').addClass('enable_timer');
     }
 
     function hideChatInputFile(){
@@ -1236,17 +1295,17 @@ var monkeyUI = new function(){
             if( evt.type == 'load' ){
                 fileCaptured.src = evt.result;
                 
-                var html = '<div id="preview-image">'+
-                      '<div class="preview-head">'+
-                        '<div class="preview-title">Preview</div> '+
-                        '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
-                      '</div>'+
-                      '<div class="preview-container">'+
-                        '<img id="image_preview" src="'+fileCaptured.src+'">'+
-                      '</div>'+
-                    '</div>';
+                // var html = '<div id="preview-image">'+
+                //       '<div class="preview-head">'+
+                //         '<div class="preview-title">Preview</div> '+
+                //         '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
+                //       '</div>'+
+                //       '<div class="preview-container">'+
+                //         '<img id="image_preview" src="'+fileCaptured.src+'">'+
+                //       '</div>'+
+                //     '</div>';
 
-                $('#chat-timeline').before(html);
+                $('#button-send-message').click();
             }
         });
     }
@@ -1363,15 +1422,12 @@ var monkeyUI = new function(){
 
     function getFFMPEGWorker() {
         var ffmpegWorker = new Worker();
-        ffmpegWorker.addEventListener('message', function(event) {
+        ffmpegWorker.onmessage = function (event) {
             var message = event.data;
 
-            if (message.type === "ready" && window.File && window.FileList && window.FileReader){
-            } else if (message.type == "stdout") {
+            if (message.type === "ready" && window.File && window.FileList && window.FileReader) {} else if (message.type == "stdout") {
                 // console.log(message.data);
-            } else if (message.type == "stderr") {
-
-            } else if (message.type == "done") {
+            } else if (message.type == "stderr") {} else if (message.type == "done") {
                 var code = message.data.code;
                 var outFileNames = Object.keys(message.data.outputFiles);
 
@@ -1386,7 +1442,7 @@ var monkeyUI = new function(){
                     console.log('hubo un error');
                 }
             }
-        }, false);
+        };
         return ffmpegWorker;
     }
 

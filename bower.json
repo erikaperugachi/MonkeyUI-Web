@@ -5,7 +5,7 @@
     "Criptext"
   ],
   "description": "UI Library of bubbles for your chat",
-  "main": "ChatUI.js",
+  "main": "main.js",
   "moduleType": [],
   "keywords": [
     "messaging",
