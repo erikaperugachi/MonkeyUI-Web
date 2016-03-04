@@ -16,7 +16,6 @@ function printErr(text) {
     });
 }
 var now = Date.now;
-importScripts('ffmpeg.js');
 
 onmessage = function(event) {
 

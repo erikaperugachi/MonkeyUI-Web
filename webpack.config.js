@@ -1,9 +1,10 @@
 var path = require('path');
 module.exports = { 
-  entry: path.join(__dirname, './main.js'),
+  entry: path.join(__dirname, 'main.js'),
   output: {
     path: path.join(__dirname, 'dist'),
-    publicPath: "dist/",
+    //publicPath: "dist/",
+    publicPath: 'monkeyui/dist/',
     filename: 'monkeyUI.js',
     library: "monkeyUI"
   },
