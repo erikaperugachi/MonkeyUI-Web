@@ -46,7 +46,7 @@
 
 	// Simple ffmpeg web worker based on (https://github.com/bgrins/videoconverter.js/blob/master/demo/worker.js)
 
-	importScripts('ffmpeg.js');
+	importScripts('../src/ffmpeg.js');
 
 	function print(text) {
 	    postMessage({
@@ -61,47 +61,53 @@
 	        'data' : text
 	    });
 	}
+	var now = Date.now;
+	importScripts('ffmpeg.js');
 
-	self.addEventListener('message', function(event) {
-	    var message = event.data;
-	    if (message.type === "command") {
-	        postMessage({
-	            'type' : 'start',
-	        });
-	                      
-	        var Module = {
-	            print: print,
-	            printErr: printErr,
-	            files: message.files || [],
-	            arguments: message.arguments || []
-	        };
-	                      
-	        postMessage({
-	            'type' : 'stdout',
-	            'data' : 'Received command: ' + Module.arguments.join(" ")
-	        });
-	        
-	        var time = Date.now();
-	        var result = ffmpeg_run(Module);
-	        var totalTime = Date.now() - time;
+	onmessage = function(event) {
 
-	        postMessage({
-	            'type' : 'stdout',
-	            'data' : 'Finished processing (took ' + totalTime + 'ms)'
-	        });
-	        
-	        // use transferrable objects
-	        var buffers = [];
-	        for (var i in result.outputFiles) {
-	            buffers.push(result.outputFiles[i]);
-	        }
-	                      
-	        postMessage({
-	            'type' : 'done',
-	            'data' : result
-	        }, buffers);
-	    }
-	}, false);
+	  var message = event.data;
+
+	  if (message.type === "command") {
+
+	    var Module = {
+	      print: print,
+	      printErr: print,
+	      files: message.files || [],
+	      arguments: message.arguments || [],
+	      TOTAL_MEMORY: message.TOTAL_MEMORY || false
+	      // Can play around with this option - must be a power of 2
+	      // TOTAL_MEMORY: 268435456
+	    };
+
+	    postMessage({
+	      'type' : 'start',
+	      'data' : Module.arguments.join(" ")
+	    });
+
+	    postMessage({
+	      'type' : 'stdout',
+	      'data' : 'Received command: ' +
+	                Module.arguments.join(" ") +
+	                ((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")
+	    });
+
+	    var time = now();
+	    var result = ffmpeg_run(Module);
+
+	    var totalTime = now() - time;
+	    postMessage({
+	      'type' : 'stdout',
+	      'data' : 'Finished processing (took ' + totalTime + 'ms)'
+	    });
+
+	    postMessage({
+	      'type' : 'done',
+	      'data' : result,
+	      'time' : totalTime
+	    });
+	  }
+	};
 
 	// ffmpeg loaded
 	postMessage({
