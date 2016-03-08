@@ -4,6 +4,8 @@ require('./bower_components/jquery-knob/dist/jquery.knob.min.js');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
+require('jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css');
+
 
 //require('./src/jquery.knob.min.js');
 
@@ -65,7 +67,7 @@ var globalAudioPreview;
 var timestampPrev;
 
 // Variable to send message
-var typeMessageToSend; // text:1 || image:2 || audio:3
+var typeMessageToSend; // text:0 || audio:1 || image:3 || file:4 
 
 var inputConf = {}
 
@@ -201,7 +203,7 @@ var monkeyUI = new function(){
 
     function detectFuntionality(){
         if (window.location.protocol != "https:"){
-            //disabledAudioButton(true);
+            disabledAudioButton(true);
         }
     }
 
@@ -215,7 +217,7 @@ var monkeyUI = new function(){
             '<div id="divider-chat-input"></div>';
             if (input.isAttachButton) {
                 _html += '<div class="button-input">'+
-                            '<button id="button-attach-file" class="button-icon"></button>'+
+                            '<button id="button-attach" class="button-icon"></button>'+
                             '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">'+
                         '</div>'+
                         '<div class="'+monkeyUI.screen.mode+' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
@@ -233,9 +235,9 @@ var monkeyUI = new function(){
                 _html += '<div id="record-area" class="disappear">'+
                                     '<div class="record-preview-area">'+
                                         '<div id="button-action-record">'+
-                                            '<button id="button-start-record"></button>'+
+                                            '<button id="button-start-record" class="blink"></button>'+
                                         '</div>'+
-                                        '<div id="time-recorder"><span id="minutes">00</span><span>:</span><span id="seconds">00</span></div>'+
+                                        '<div id="time-recorder" class="blink"><span id="minutes">00</span><span>:</span><span id="seconds">00</span></div>'+
                                     '</div>'+
                                 '</div>';
             }
@@ -269,7 +271,7 @@ var monkeyUI = new function(){
         $('#button-start-record').show();
         $('#record-area').removeClass("appear");
         $('#record-area').addClass("disappear");
-        $('#button-attach-file').parent().removeClass("disappear");
+        $('#button-attach').parent().removeClass("disappear");
         $('#button-cancel-audio').parent().addClass("disappear");
         $('#button-record-audio').parent().removeClass("disappear");
         $('#button-send-message').parent().addClass("disappear");
@@ -279,7 +281,7 @@ var monkeyUI = new function(){
         $("#seconds").html('00');
         $("#message-text-input").removeClass("disappear");
         clearAudioRecordTimer();
-        typeMessageToSend = 1;
+        typeMessageToSend = 0;
     }
 
     function clearAudioRecordTimer() {
@@ -324,27 +326,20 @@ var monkeyUI = new function(){
                     $('#button-record-audio').parent().addClass("disappear");
                     $('#button-send-message').parent().removeClass("disappear");
                     $('#button-send-ephemeral').addClass('enable_timer');
-                    typeMessageToSend = 1;
+                    typeMessageToSend = 0;
                 }
             } 
         });
         
         $('#button-send-message').click(function () {
             switch(typeMessageToSend){
-                case 1:
+                case 0:
                     var _messageText = $('#message-text-input').val().trim();
                     $(monkeyUI).trigger('textMessage', _messageText);
                     $('#message-text-input').val("");
                     monkeyUI.showChatInput();
                     break;
-                case 2:
-                    $('#attach-file').val('');
-                    $('#preview-image').remove();
-                    hideChatInputFile();
-                    $(monkeyUI).trigger('fileMessage', fileCaptured);
-                    
-                    break;
-                case 3:
+                case 1:
                     if (mediaRecorder != null) {
                         mediaRecorder.stop(); //detiene la grabacion del audio
                     }
@@ -353,12 +348,23 @@ var monkeyUI = new function(){
                     buildAudio();
                     mediaRecorder = null;
                     break;
+                case 3:
+                    $('#attach-file').val('');
+                    //$('#preview-image').remove();
+                    hideChatInputFile();
+                    $(monkeyUI).trigger('imageMessage', fileCaptured);
+                    break;
+                case 4:
+                    $('#attach-file').val('');
+                    hideChatInputFile();
+                    $(monkeyUI).trigger('fileMessage', fileCaptured);
+                    break;
                 default:
                     break;
             }
         });
 
-        $("#button-attach-file").click(function () {
+        $("#button-attach").click(function () {
             $("#attach-file").trigger('click'); 
         });
 
@@ -431,17 +437,20 @@ var monkeyUI = new function(){
     });
 
     function catchUpFile(file) {
-        typeMessageToSend = 2;
+        
         fileCaptured.file = file;
         console.log(fileCaptured.file)
         fileCaptured.ext = getExtention(fileCaptured.file);
 
         var _fileType = checkExtention(fileCaptured.file);
         if (_fileType >= 1 && _fileType <= 4) {
+            typeMessageToSend = 4;
             fileCaptured.monkeyFileType = 4;
+            generateDataFile();
         } else if (_fileType == 6) {
+            typeMessageToSend = 3;
             fileCaptured.monkeyFileType = 3;
-            showPreviewImage();
+            generateDataFile();
             return;
         } else {
             return false;
@@ -449,18 +458,18 @@ var monkeyUI = new function(){
     }
 
     function showChatInputFile(){
-        typeMessageToSend = 2;
+        typeMessageToSend = 3;
         // $("#chat-input").addClass('chat-input-file');
-        // $('#button-attach-file').parent().addClass("disappear");
+        // $('#button-attach').parent().addClass("disappear");
         // $('#button-record-audio').parent().addClass("disappear");
         // $('#button-send-message').parent().removeClass("disappear");
         // $('#button-send-ephemeral').addClass('enable_timer');
     }
 
     function hideChatInputFile(){
-        typeMessageToSend = 0;
+        typeMessageToSend = -1;
         $("#chat-input").removeClass('chat-input-file');
-        $('#button-attach-file').parent().removeClass("disappear");
+        $('#button-attach').parent().removeClass("disappear");
         $('#button-record-audio').parent().removeClass("disappear");
         $('#button-send-message').parent().addClass("disappear");
         $('#button-send-ephemeral').removeClass('enable_timer');
@@ -470,7 +479,7 @@ var monkeyUI = new function(){
         $('#record-area').removeClass("disappear");
         $('#record-area').addClass("appear");
         $('#button-cancel-audio').parent().removeClass("disappear");
-        $('#button-attach-file').parent().addClass("disappear");
+        $('#button-attach').parent().addClass("disappear");
         $('#button-send-message').parent().removeClass("disappear");
         $('#button-record-audio').parent().addClass("disappear");
         $("#message-text-input").addClass("disappear");
@@ -673,7 +682,6 @@ var monkeyUI = new function(){
         return _bubble;
     }
 
-    
     this.drawTextMessageBubble = function(message, conversationId, isGroupChat, status){
         var _isOutgoing = message.senderId == this.user.monkeyId ? 1 : 0;
         var _conversationIdHandling = getConversationIdHandling(conversationId);
@@ -764,7 +772,46 @@ var monkeyUI = new function(){
         } 
     }
 
+    this.drawFileMessageBubble = function(message, conversationId, isGroupChat, status){
+        var _isOutgoing = message.senderId == this.user.monkeyId ? 1 : 0;
+        var _conversationIdHandling = getConversationIdHandling(conversationId);
+        var _fileName = message.text;
+        var _dataSource = message.dataSource != undefined ? message.dataSource : '';
 
+        $('#chat-timeline-conversation-'+_conversationIdHandling).append(baseBubble(message, _isOutgoing, isGroupChat, status));
+        var _classTypeBubble = _isOutgoing ? 'bubble-file-out' : 'bubble-file-in';
+        var _messagePoint = $('#'+message.id);
+        _messagePoint.addClass('bubble-file');
+        _messagePoint.addClass(_classTypeBubble);
+        var _content = '<div class="content-file">'+
+                            '<a class="file-icon-link" href="'+_dataSource+'" download="'+message.filename+'" >';
+
+        if(message.ext == 'doc' || message.ext == 'docx'){
+            _content += '<div class="file-icon-define icon-word"></div>';
+        }else if(message.ext == 'pdf'){
+            _content += '<div class="file-icon-define icon-pdf"></div>';
+        }else if(message.ext == 'xls' || message.ext == 'xlsx'){
+            _content += '<div class="file-icon-define xls-icon"></div>';
+        }else{
+            _content += '<div class="file-icon-define img-icon"></div>';
+        }
+        //_content += '<img class="icon-file-define" src="./images/xls-icon.png" alt="your image" />';
+        //_content += '<img class="icon-file-define" src="./images/ppt-icon.png" alt="your image" />';
+        _content += '</a>'+
+                    '<div class="file-detail">'+
+                        '<span class="file-name">'+message.filename+'</span></br>'+
+                        '<span class="file-size">'+message.filesize+'</span>'+
+                    '</div>'+
+                        '</div>';
+        _messagePoint.append(_content);
+        scrollToDown();
+
+        if(message.eph == 1){
+            updateNotification("Private File",_conversationIdHandling);
+        }else{
+            updateNotification("File",_conversationIdHandling);
+        }
+    }
 
 
 
@@ -1107,6 +1154,8 @@ var monkeyUI = new function(){
             messagePoint.find('img').attr('src',data);
         }else if(messagePoint.find('audio').length > 0){
             messagePoint.find('audio').attr('src',data);
+        }else if(messagePoint.find('.content-file').length > 0){
+            messagePoint.find('.file-icon-link').attr('href',data);
         }
     }
 
@@ -1288,24 +1337,29 @@ var monkeyUI = new function(){
         $('.viewer-content').remove();
     }
 
-    function showPreviewImage () {
-        var image_data = '';
-
+    function generateDataFile() {
         FileAPI.readAsDataURL(fileCaptured.file, function (evt){
             if( evt.type == 'load' ){
                 fileCaptured.src = evt.result;
-                
-                // var html = '<div id="preview-image">'+
-                //       '<div class="preview-head">'+
-                //         '<div class="preview-title">Preview</div> '+
-                //         '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
-                //       '</div>'+
-                //       '<div class="preview-container">'+
-                //         '<img id="image_preview" src="'+fileCaptured.src+'">'+
-                //       '</div>'+
-                //     '</div>';
-
                 $('#button-send-message').click();
+            }
+        });
+    }
+
+    function showPreviewImage() { // Optional to use: replace with generateDataFile()
+        var image_data = '';
+        FileAPI.readAsDataURL(fileCaptured.file, function (evt){
+            if( evt.type == 'load' ){
+                fileCaptured.src = evt.result;
+                var html = '<div id="preview-image">'+
+                      '<div class="preview-head">'+
+                        '<div class="preview-title">Preview</div> '+
+                        '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
+                      '</div>'+
+                      '<div class="preview-container">'+
+                        '<img id="image_preview" src="'+fileCaptured.src+'">'+
+                      '</div>'+
+                    '</div>';
             }
         });
     }
@@ -1345,7 +1399,7 @@ var monkeyUI = new function(){
     // if the browser can record, this is executed
     function onMediaSuccess(stream) {
         //default settings to record
-        typeMessageToSend = 3;
+        typeMessageToSend = 1;
         mediaRecorder = new MediaStreamRecorder(stream);
         mediaRecorder.mimeType = 'audio/wav';
         mediaRecorder.audioChannels = 1;
@@ -1593,26 +1647,26 @@ function drawFileTypeIntoBubble(fileType_,file, messageId_, fileName) {
     if (fileType_ == 6) {
         $('#bubble'+messageId_).addClass('icon-image');
 
-        // var html = '<img class="image_upload_preview" src="./images/img-icon.png" alt="your image" />';
+        // var html = '<img class="image-upload-preview" src="./images/img-icon.png" alt="your image" />';
         // $('#bubble'+messageId_).last().append(html);
     }else{
         var html='<div class="link-content"> <table><tr>';
 
         switch(fileType_){
             case 1:
-                html=html+'<td><img class="image_upload_preview" src="./images/word-icon.png" alt="your image" /></td> ';
+                html=html+'<td><img class="image-upload-preview" src="./images/word-icon.png" alt="your image" /></td> ';
                 break;
             case 2:
-                html=html+'<td><img class="image_upload_preview" src="./images/pdf-icon.png" alt="your image" /></td> ';
+                html=html+'<td><img class="image-upload-preview" src="./images/pdf-icon.png" alt="your image" /></td> ';
                 break;
             case 3:
-                html=html+'<td><img class="image_upload_preview" src="./images/xls-icon.png" alt="your image" /> </td>';
+                html=html+'<td><img class="image-upload-preview" src="./images/xls-icon.png" alt="your image" /> </td>';
                 break;
             case 4:
-                html=html+'<td><img class="image_upload_preview" src="./images/ppt-icon.png" alt="your image" /></td> ';
+                html=html+'<td><img class="image-upload-preview" src="./images/ppt-icon.png" alt="your image" /></td> ';
                 break;
             case 6:
-                html=html+'<td><img class="image_upload_preview" src="./images/img-icon.png" alt="your image" /> </td>';
+                html=html+'<td><img class="image-upload-preview" src="./images/img-icon.png" alt="your image" /> </td>';
                 break;
         }
 
