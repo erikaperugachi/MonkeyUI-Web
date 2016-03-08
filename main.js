@@ -1,6 +1,7 @@
-require('./bower_components/font-awesome/css/font-awesome.min.css');
 require('./bower_components/fileapi/dist/FileAPI.min.js');
-require('./bower_components/jquery-knob/dist/jquery.knob.min.js');
+require('./bower_components/jquery-knob/js/jquery.knob.js');
+
+require('font-awesome/css/font-awesome.css');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
@@ -82,6 +83,8 @@ var monkeyUI = new function(){
     this.user;
 
     var FULLSIZE = 'fullsize';
+    var STANDARD = 'standard';
+    var KNOB = 'knob';
 
     this.isConversationList = true;
     this.input = {};
@@ -93,6 +96,8 @@ var monkeyUI = new function(){
     this.screen.mode = FULLSIZE;
     this.screen.width = undefined;
     this.screen.height = undefined;
+    this.audio = {};
+    this.audio.type = KNOB;
 
     this.setChat = function(conf){
         monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
@@ -103,6 +108,7 @@ var monkeyUI = new function(){
         monkeyUI.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
         monkeyUI.screen.width = conf.screen.width;
         monkeyUI.screen.height = conf.screen.height;
+        monkeyUI.audio.type = conf.audio.type == undefined ? STANDARD : conf.audio.type;
     }
 
     this.drawScene = function(content){
@@ -746,22 +752,30 @@ var monkeyUI = new function(){
             _messagePoint.addClass('bubble-audio');
             _messagePoint.addClass(_classTypeBubble);
         }
-        var _content = '<div class="content-audio disabled">'+
-                            '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="monkeyUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
-                            '<img id="pauseAudioBubbleImg'+message.id+'" onclick="monkeyUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
-                            '<input id="play-player_'+message.id+'" class="knob second" data-width="100" data-displayPrevious=true value="0">'+
-                            '<div class="bubble-audio-timer"><span id="minutesBubble'+message.id+'">00</span><span>:</span><span id="secondsBubble'+message.id+'">00</span></div>'+
-                        '</div>'+
-                        '<audio id="audio_'+message.id+'" preload="auto" style="display:none;" controls="" src="'+_dataSource+'"></audio>';
-        _messagePoint.append(_content);
 
-        createAudiohandlerBubble(message.id,Math.round(message.length));
-        audiobuble = document.getElementById("audio_"+message.id);
-        audiobuble.oncanplay = function() {
-            createAudiohandlerBubble(message.id,Math.round(audiobuble.duration));
-            setDurationTime(message.id);
-            $('#'+message.id+' .content-audio').removeClass('disabled');
-        };
+        if(this.audio.type == 'knob'){
+            var _content = '<div class="content-audio disabled">'+
+                                '<img id="playAudioBubbleImg'+message.id+'" style="display:block;" onclick="monkeyUI.playAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+' playBubbleControl" src="../images/PlayBubble.png">'+
+                                '<img id="pauseAudioBubbleImg'+message.id+'" onclick="monkeyUI.pauseAudioBubble('+message.id+');" class="bubble-audio-button bubble-audio-button'+message.id+'" src="../images/PauseBubble.png">'+
+                                '<input id="play-player_'+message.id+'" class="knob second" data-width="100" data-displayPrevious=true value="0">'+
+                                '<div class="bubble-audio-timer"><span id="minutesBubble'+message.id+'">00</span><span>:</span><span id="secondsBubble'+message.id+'">00</span></div>'+
+                            '</div>'+
+                            '<audio id="audio_'+message.id+'" preload="auto" style="display:none;" controls="" src="'+_dataSource+'"></audio>';
+            _messagePoint.append(_content);
+
+            createAudiohandlerBubble(message.id,Math.round(message.length));
+            audiobuble = document.getElementById("audio_"+message.id);
+            audiobuble.oncanplay = function() {
+                createAudiohandlerBubble(message.id,Math.round(audiobuble.duration));
+                setDurationTime(message.id);
+                $('#'+message.id+' .content-audio').removeClass('disabled');
+            };
+        }else{
+            var _content = '<audio id="audio_'+message.id+'" preload="auto" controls="" src="'+_dataSource+'"></audio>';
+            _messagePoint.append(_content);
+        }
+
+        
 
         scrollToDown();
 
@@ -799,8 +813,8 @@ var monkeyUI = new function(){
         //_content += '<img class="icon-file-define" src="./images/ppt-icon.png" alt="your image" />';
         _content += '</a>'+
                     '<div class="file-detail">'+
-                        '<span class="file-name">'+message.filename+'</span></br>'+
-                        '<span class="file-size">'+message.filesize+'</span>'+
+                        '<div class="file-name"><span class="ellipsify">'+message.filename+'</span></div>'+
+                        '<div class="file-size"><span class="ellipsify">'+message.filesize+' bytes</span></div>'+
                     '</div>'+
                         '</div>';
         _messagePoint.append(_content);
