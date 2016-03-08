@@ -67,6 +67,7 @@ var monkeyUI =
 
 	__webpack_require__(18);
 	__webpack_require__(19);
+	__webpack_require__(26);
 
 	//require('./src/jquery.knob.min.js');
 
@@ -78,12 +79,12 @@ var monkeyUI =
 
 	// =================
 	// MediaStreamRecorder.js
-	var MediaStreamRecorder = __webpack_require__(26).MediaStreamRecorder;
-	window.StereoRecorder = __webpack_require__(26).StereoRecorder;
+	var MediaStreamRecorder = __webpack_require__(28).MediaStreamRecorder;
+	window.StereoRecorder = __webpack_require__(28).StereoRecorder;
 
 	// =================
 	// ffmpegWorker.js
-	var Worker = __webpack_require__(27);
+	var Worker = __webpack_require__(29);
 
 	// Variable to store the file to send
 	var fileCaptured = {}; // save files
@@ -124,7 +125,7 @@ var monkeyUI =
 	var timestampPrev;
 
 	// Variable to send message
-	var typeMessageToSend; // text:1 || image:2 || audio:3
+	var typeMessageToSend; // text:0 || audio:1 || image:3 || file:4
 
 	var inputConf = {};
 
@@ -231,7 +232,7 @@ var monkeyUI =
 
 	    function detectFuntionality() {
 	        if (window.location.protocol != "https:") {
-	            //disabledAudioButton(true);
+	            disabledAudioButton(true);
 	        }
 	    }
 
@@ -243,7 +244,7 @@ var monkeyUI =
 
 	        var _html = '<div id="chat-input">' + '<div id="divider-chat-input"></div>';
 	        if (input.isAttachButton) {
-	            _html += '<div class="button-input">' + '<button id="button-attach-file" class="button-icon"></button>' + '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">' + '</div>' + '<div class="' + monkeyUI.screen.mode + ' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
+	            _html += '<div class="button-input">' + '<button id="button-attach" class="button-icon"></button>' + '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">' + '</div>' + '<div class="' + monkeyUI.screen.mode + ' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
 	        }
 
 	        if (input.isAudioButton) {
@@ -279,7 +280,7 @@ var monkeyUI =
 	        $('#button-start-record').show();
 	        $('#record-area').removeClass("appear");
 	        $('#record-area').addClass("disappear");
-	        $('#button-attach-file').parent().removeClass("disappear");
+	        $('#button-attach').parent().removeClass("disappear");
 	        $('#button-cancel-audio').parent().addClass("disappear");
 	        $('#button-record-audio').parent().removeClass("disappear");
 	        $('#button-send-message').parent().addClass("disappear");
@@ -289,7 +290,7 @@ var monkeyUI =
 	        $("#seconds").html('00');
 	        $("#message-text-input").removeClass("disappear");
 	        clearAudioRecordTimer();
-	        typeMessageToSend = 1;
+	        typeMessageToSend = 0;
 	    };
 
 	    function clearAudioRecordTimer() {
@@ -334,27 +335,20 @@ var monkeyUI =
 	                    $('#button-record-audio').parent().addClass("disappear");
 	                    $('#button-send-message').parent().removeClass("disappear");
 	                    $('#button-send-ephemeral').addClass('enable_timer');
-	                    typeMessageToSend = 1;
+	                    typeMessageToSend = 0;
 	                }
 	            }
 	        });
 
 	        $('#button-send-message').click(function () {
 	            switch (typeMessageToSend) {
-	                case 1:
+	                case 0:
 	                    var _messageText = $('#message-text-input').val().trim();
 	                    $(monkeyUI).trigger('textMessage', _messageText);
 	                    $('#message-text-input').val("");
 	                    monkeyUI.showChatInput();
 	                    break;
-	                case 2:
-	                    $('#attach-file').val('');
-	                    $('#preview-image').remove();
-	                    hideChatInputFile();
-	                    $(monkeyUI).trigger('fileMessage', fileCaptured);
-
-	                    break;
-	                case 3:
+	                case 1:
 	                    if (mediaRecorder != null) {
 	                        mediaRecorder.stop(); //detiene la grabacion del audio
 	                    }
@@ -363,12 +357,23 @@ var monkeyUI =
 	                    buildAudio();
 	                    mediaRecorder = null;
 	                    break;
+	                case 3:
+	                    $('#attach-file').val('');
+	                    //$('#preview-image').remove();
+	                    hideChatInputFile();
+	                    $(monkeyUI).trigger('imageMessage', fileCaptured);
+	                    break;
+	                case 4:
+	                    $('#attach-file').val('');
+	                    hideChatInputFile();
+	                    $(monkeyUI).trigger('fileMessage', fileCaptured);
+	                    break;
 	                default:
 	                    break;
 	            }
 	        });
 
-	        $("#button-attach-file").click(function () {
+	        $("#button-attach").click(function () {
 	            $("#attach-file").trigger('click');
 	        });
 
@@ -440,17 +445,20 @@ var monkeyUI =
 	    });
 
 	    function catchUpFile(file) {
-	        typeMessageToSend = 2;
+
 	        fileCaptured.file = file;
 	        console.log(fileCaptured.file);
 	        fileCaptured.ext = getExtention(fileCaptured.file);
 
 	        var _fileType = checkExtention(fileCaptured.file);
 	        if (_fileType >= 1 && _fileType <= 4) {
+	            typeMessageToSend = 4;
 	            fileCaptured.monkeyFileType = 4;
+	            generateDataFile();
 	        } else if (_fileType == 6) {
+	            typeMessageToSend = 3;
 	            fileCaptured.monkeyFileType = 3;
-	            showPreviewImage();
+	            generateDataFile();
 	            return;
 	        } else {
 	            return false;
@@ -458,18 +466,18 @@ var monkeyUI =
 	    }
 
 	    function showChatInputFile() {
-	        typeMessageToSend = 2;
+	        typeMessageToSend = 3;
 	        // $("#chat-input").addClass('chat-input-file');
-	        // $('#button-attach-file').parent().addClass("disappear");
+	        // $('#button-attach').parent().addClass("disappear");
 	        // $('#button-record-audio').parent().addClass("disappear");
 	        // $('#button-send-message').parent().removeClass("disappear");
 	        // $('#button-send-ephemeral').addClass('enable_timer');
 	    }
 
 	    function hideChatInputFile() {
-	        typeMessageToSend = 0;
+	        typeMessageToSend = -1;
 	        $("#chat-input").removeClass('chat-input-file');
-	        $('#button-attach-file').parent().removeClass("disappear");
+	        $('#button-attach').parent().removeClass("disappear");
 	        $('#button-record-audio').parent().removeClass("disappear");
 	        $('#button-send-message').parent().addClass("disappear");
 	        $('#button-send-ephemeral').removeClass('enable_timer');
@@ -479,7 +487,7 @@ var monkeyUI =
 	        $('#record-area').removeClass("disappear");
 	        $('#record-area').addClass("appear");
 	        $('#button-cancel-audio').parent().removeClass("disappear");
-	        $('#button-attach-file').parent().addClass("disappear");
+	        $('#button-attach').parent().addClass("disappear");
 	        $('#button-send-message').parent().removeClass("disappear");
 	        $('#button-record-audio').parent().addClass("disappear");
 	        $("#message-text-input").addClass("disappear");
@@ -756,6 +764,41 @@ var monkeyUI =
 	        }
 	    };
 
+	    this.drawFileMessageBubble = function (message, conversationId, isGroupChat, status) {
+	        var _isOutgoing = message.senderId == this.user.monkeyId ? 1 : 0;
+	        var _conversationIdHandling = getConversationIdHandling(conversationId);
+	        var _fileName = message.text;
+	        var _dataSource = message.dataSource != undefined ? message.dataSource : '';
+
+	        $('#chat-timeline-conversation-' + _conversationIdHandling).append(baseBubble(message, _isOutgoing, isGroupChat, status));
+	        var _classTypeBubble = _isOutgoing ? 'bubble-file-out' : 'bubble-file-in';
+	        var _messagePoint = $('#' + message.id);
+	        _messagePoint.addClass('bubble-file');
+	        _messagePoint.addClass(_classTypeBubble);
+	        var _content = '<div class="content-file">' + '<a class="file-icon-link" href="' + _dataSource + '" download="' + message.filename + '" >';
+
+	        if (message.ext == 'doc' || message.ext == 'docx') {
+	            _content += '<div class="file-icon-define icon-word"></div>';
+	        } else if (message.ext == 'pdf') {
+	            _content += '<div class="file-icon-define icon-pdf"></div>';
+	        } else if (message.ext == 'xls' || message.ext == 'xlsx') {
+	            _content += '<div class="file-icon-define xls-icon"></div>';
+	        } else {
+	            _content += '<div class="file-icon-define img-icon"></div>';
+	        }
+	        //_content += '<img class="icon-file-define" src="./images/xls-icon.png" alt="your image" />';
+	        //_content += '<img class="icon-file-define" src="./images/ppt-icon.png" alt="your image" />';
+	        _content += '</a>' + '<div class="file-detail">' + '<span class="file-name">' + message.filename + '</span></br>' + '<span class="file-size">' + message.filesize + '</span>' + '</div>' + '</div>';
+	        _messagePoint.append(_content);
+	        scrollToDown();
+
+	        if (message.eph == 1) {
+	            updateNotification("Private File", _conversationIdHandling);
+	        } else {
+	            updateNotification("File", _conversationIdHandling);
+	        }
+	    };
+
 	    this.drawTextMessageBubble_ = function (message, conversationId, status) {
 	        var _isOutgoing = message.senderId == this.user.monkeyId ? 1 : 0;
 	        var _conversationIdHandling = getConversationIdHandling(conversationId);
@@ -971,6 +1014,8 @@ var monkeyUI =
 	            messagePoint.find('img').attr('src', data);
 	        } else if (messagePoint.find('audio').length > 0) {
 	            messagePoint.find('audio').attr('src', data);
+	        } else if (messagePoint.find('.content-file').length > 0) {
+	            messagePoint.find('.file-icon-link').attr('href', data);
 	        }
 	    };
 
@@ -1143,24 +1188,22 @@ var monkeyUI =
 	        $('.viewer-content').remove();
 	    };
 
-	    function showPreviewImage() {
-	        var image_data = '';
-
+	    function generateDataFile() {
 	        FileAPI.readAsDataURL(fileCaptured.file, function (evt) {
 	            if (evt.type == 'load') {
 	                fileCaptured.src = evt.result;
-
-	                // var html = '<div id="preview-image">'+
-	                //       '<div class="preview-head">'+
-	                //         '<div class="preview-title">Preview</div> '+
-	                //         '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>'+
-	                //       '</div>'+
-	                //       '<div class="preview-container">'+
-	                //         '<img id="image_preview" src="'+fileCaptured.src+'">'+
-	                //       '</div>'+
-	                //     '</div>';
-
 	                $('#button-send-message').click();
+	            }
+	        });
+	    }
+
+	    function showPreviewImage() {
+	        // Optional to use: replace with generateDataFile()
+	        var image_data = '';
+	        FileAPI.readAsDataURL(fileCaptured.file, function (evt) {
+	            if (evt.type == 'load') {
+	                fileCaptured.src = evt.result;
+	                var html = '<div id="preview-image">' + '<div class="preview-head">' + '<div class="preview-title">Preview</div> ' + '<div id="close-preview-image" class="preview-close" onclick="monkeyUI.closeImagePreview(this)">X</div>' + '</div>' + '<div class="preview-container">' + '<img id="image_preview" src="' + fileCaptured.src + '">' + '</div>' + '</div>';
 	            }
 	        });
 	    }
@@ -1200,7 +1243,7 @@ var monkeyUI =
 	    // if the browser can record, this is executed
 	    function onMediaSuccess(stream) {
 	        //default settings to record
-	        typeMessageToSend = 3;
+	        typeMessageToSend = 1;
 	        mediaRecorder = new MediaStreamRecorder(stream);
 	        mediaRecorder.mimeType = 'audio/wav';
 	        mediaRecorder.audioChannels = 1;
@@ -1413,26 +1456,26 @@ var monkeyUI =
 	    if (fileType_ == 6) {
 	        $('#bubble' + messageId_).addClass('icon-image');
 
-	        // var html = '<img class="image_upload_preview" src="./images/img-icon.png" alt="your image" />';
+	        // var html = '<img class="image-upload-preview" src="./images/img-icon.png" alt="your image" />';
 	        // $('#bubble'+messageId_).last().append(html);
 	    } else {
 	            var html = '<div class="link-content"> <table><tr>';
 
 	            switch (fileType_) {
 	                case 1:
-	                    html = html + '<td><img class="image_upload_preview" src="./images/word-icon.png" alt="your image" /></td> ';
+	                    html = html + '<td><img class="image-upload-preview" src="./images/word-icon.png" alt="your image" /></td> ';
 	                    break;
 	                case 2:
-	                    html = html + '<td><img class="image_upload_preview" src="./images/pdf-icon.png" alt="your image" /></td> ';
+	                    html = html + '<td><img class="image-upload-preview" src="./images/pdf-icon.png" alt="your image" /></td> ';
 	                    break;
 	                case 3:
-	                    html = html + '<td><img class="image_upload_preview" src="./images/xls-icon.png" alt="your image" /> </td>';
+	                    html = html + '<td><img class="image-upload-preview" src="./images/xls-icon.png" alt="your image" /> </td>';
 	                    break;
 	                case 4:
-	                    html = html + '<td><img class="image_upload_preview" src="./images/ppt-icon.png" alt="your image" /></td> ';
+	                    html = html + '<td><img class="image-upload-preview" src="./images/ppt-icon.png" alt="your image" /></td> ';
 	                    break;
 	                case 6:
-	                    html = html + '<td><img class="image_upload_preview" src="./images/img-icon.png" alt="your image" /> </td>';
+	                    html = html + '<td><img class="image-upload-preview" src="./images/img-icon.png" alt="your image" /> </td>';
 	                    break;
 	            }
 
@@ -1579,6 +1622,9 @@ var monkeyUI =
 
 	        if (mokMessage.params) {
 	            this.length = mokMessage.params.length;
+	            this.filesize = mokMessage.params.size;
+	            this.filename = mokMessage.params.name;
+	            this.filetype = mokMessage.params.type;
 	        } else {
 	            this.length = 15;
 	        }
@@ -1594,6 +1640,10 @@ var monkeyUI =
 
 	        this.setDataSource = function (dataSource) {
 	            this.dataSource = dataSource;
+	        };
+
+	        this.setFilename = function (filename) {
+	            this.filename = filename;
 	        };
 
 	        this.isEncrypted = function () {
@@ -11963,6 +12013,46 @@ var monkeyUI =
 
 /***/ },
 /* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(27);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(13)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../css-loader/index.js?sourceMap!./jquery.filer-dragdropbox-theme.css", function() {
+				var newContent = require("!!./../../../css-loader/index.js?sourceMap!./jquery.filer-dragdropbox-theme.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(6)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "/*!\n * CSS jQuery.filer\n * Theme: DragDropBox\n * Copyright (c) 2015 CreativeDream\n * Version: 1.0.4 (29-Oct-2015)\n*/\n\n/*-------------------------\n\tInput\n-------------------------*/\n.jFiler-input-dragDrop {\n    display: block;\n    width: 343px;\n    margin: 0 auto 25px auto;\n    padding: 25px;\n    color: #8d9499;\n    color: #97A1A8;\n    background: #fff;\n    border: 2px dashed #C8CBCE;\n    text-align: center;\n    -webkit-transition: box-shadow 0.3s,\n                        border-color 0.3s;\n    -moz-transition: box-shadow 0.3s,\n                        border-color 0.3s;\n    transition: box-shadow 0.3s,\n                        border-color 0.3s;\n}\n\n.jFiler.dragged .jFiler-input-dragDrop {\n    border-color: #aaa;\n    box-shadow: inset 0 0 20px rgba(0,0,0,.08);\n}\n\n.jFiler.dragged .jFiler-input-dragDrop * {\n    pointer-events: none;\n}\n\n.jFiler.dragged .jFiler-input-icon {\n    -webkit-transform: rotate(180deg);\n    -ms-transform: rotate(180deg);\n    transform: rotate(180deg);\n}\n\n.jFiler.dragged .jFiler-input-text,\n.jFiler.dragged .jFiler-input-choose-btn {\n    filter: alpha(opacity=30);\n    opacity: 0.3;\n}\n\n.jFiler-input-dragDrop .jFiler-input-icon {\n    font-size: 48px;\n    margin-top: -10px;\n    -webkit-transition: all 0.3s ease;\n    -moz-transition: all 0.3s ease;\n    transition: all 0.3s ease;\n}\n\n.jFiler-input-text h3 {\n    margin: 0;\n    font-size: 18px;\n}\n\n.jFiler-input-text span {\n    font-size: 12px;\n}\n\n.jFiler-input-choose-btn {\n    display: inline-block;\n    padding: 8px 14px;\n    outline: none;\n    cursor: pointer;\n    text-decoration: none;\n    text-align: center;\n    white-space: nowrap;\n    font-size: 12px;\n    font-weight: bold;\n    color: #8d9496;\n    border-radius: 3px;\n    border: 1px solid #c6c6c6;\n    vertical-align: middle;\n    background-color: #fff;\n    box-shadow: 0px 1px 5px rgba(0,0,0,0.05);\n    -webkit-transition: all 0.2s;\n    -moz-transition: all 0.2s;\n    transition: all 0.2s;\n}\n\n.jFiler-input-choose-btn:hover,\n.jFiler-input-choose-btn:active {\n    color: inherit;\n}\n\n.jFiler-input-choose-btn:active {\n    background-color: #f5f5f5;\n}\n\n/* gray */\n.jFiler-input-choose-btn.gray {\n    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fcfcfc),to(#f5f5f5));\n    background-image: -webkit-linear-gradient(top,#fcfcfc,#f5f5f5);\n    background-image: -o-linear-gradient(top,#fcfcfc,#f5f5f5);\n    background-image: linear-gradient(to bottom,#fcfcfc,#f5f5f5);\n    background-image: -moz-linear-gradient(top,#fcfcfc,#f5f5f5);\n}\n\n.jFiler-input-choose-btn.gray:hover {\n    filter: alpha(opacity=87);\n    opacity: 0.87;\n}\n\n.jFiler-input-choose-btn.gray:active {\n    background-color: #f5f5f5;\n    background-image: -webkit-gradient(linear,0 0,0 100%,from(#f5f5f5),to(#fcfcfc));\n    background-image: -webkit-linear-gradient(top,#f5f5f5,#fcfcfc);\n    background-image: -o-linear-gradient(top,#f5f5f5,#fcfcfc);\n    background-image: linear-gradient(to bottom,#f5f5f5,#fcfcfc);\n    background-image: -moz-linear-gradient(top,#f5f5f5,#fcfcfc);\n}\n\n/* blue */\n.jFiler-input-choose-btn.blue {\n    color: #008BFF;\n    border: 1px solid #008BFF;\n}\n\n.jFiler-input-choose-btn.blue:hover {\n    background: #008BFF;\n}\n\n.jFiler-input-choose-btn.blue:active {\n    background: #008BFF;\n}\n\n/* green */\n.jFiler-input-choose-btn.green {\n    color: #27ae60;\n    border: 1px solid #27ae60;\n}\n\n.jFiler-input-choose-btn.green:hover {\n    background: #27ae60;\n}\n\n.jFiler-input-choose-btn.green:active {\n    background: #27ae60;\n}\n\n/* red */\n.jFiler-input-choose-btn.red {\n    color: #ed5a5a;\n    border: 1px solid #ed5a5a;\n}\n\n.jFiler-input-choose-btn.red:hover {\n    background: #ed5a5a;\n}\n\n.jFiler-input-choose-btn.red:active {\n    background: #E05252;\n}\n\n/* black */\n.jFiler-input-choose-btn.black {\n    color: #555;\n    border: 1px solid #555;\n}\n\n.jFiler-input-choose-btn.black:hover {\n    background: #555;\n}\n\n.jFiler-input-choose-btn.black:active {\n    background: #333;\n}\n\n.jFiler-input-choose-btn.blue:hover,\n.jFiler-input-choose-btn.green:hover,\n.jFiler-input-choose-btn.red:hover,\n.jFiler-input-choose-btn.black:hover {\n    border-color: transparent;\n    color: #fff;\n}\n\n.jFiler-input-choose-btn.blue:active,\n.jFiler-input-choose-btn.green:active,\n.jFiler-input-choose-btn.red:active,\n.jFiler-input-choose-btn.black:active {\n    border-color: transparent;\n    color: #fff;\n    filter: alpha(opacity=87);\n    opacity: 0.87;\n}", "", {"version":3,"sources":["/./node_modules/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css"],"names":[],"mappings":"AAAA;;;;;EAKE;;AAEF;;2BAE2B;AAC3B;IACI,eAAe;IACf,aAAa;IACb,yBAAyB;IACzB,cAAc;IACd,eAAe;IACf,eAAe;IACf,iBAAiB;IACjB,2BAA2B;IAC3B,mBAAmB;IACnB;0CACsC;IACtC;0CACsC;IACtC;0CACsC;CACzC;;AAED;IACI,mBAAmB;IACnB,2CAA2C;CAC9C;;AAED;IACI,qBAAqB;CACxB;;AAED;IACI,kCAAkC;IAClC,8BAA8B;IAC9B,0BAA0B;CAC7B;;AAED;;IAEI,0BAA0B;IAC1B,aAAa;CAChB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;IAClB,kCAAkC;IAClC,+BAA+B;IAC/B,0BAA0B;CAC7B;;AAED;IACI,UAAU;IACV,gBAAgB;CACnB;;AAED;IACI,gBAAgB;CACnB;;AAED;IACI,sBAAsB;IACtB,kBAAkB;IAClB,cAAc;IACd,gBAAgB;IAChB,sBAAsB;IACtB,mBAAmB;IACnB,oBAAoB;IACpB,gBAAgB;IAChB,kBAAkB;IAClB,eAAe;IACf,mBAAmB;IACnB,0BAA0B;IAC1B,uBAAuB;IACvB,uBAAuB;IACvB,yCAAyC;IACzC,6BAA6B;IAC7B,0BAA0B;IAC1B,qBAAqB;CACxB;;AAED;;IAEI,eAAe;CAClB;;AAED;IACI,0BAA0B;CAC7B;;AAED,UAAU;AACV;IACI,gFAAgF;IAChF,+DAA+D;IAC/D,0DAA0D;IAC1D,6DAA6D;IAC7D,4DAA4D;CAC/D;;AAED;IACI,0BAA0B;IAC1B,cAAc;CACjB;;AAED;IACI,0BAA0B;IAC1B,gFAAgF;IAChF,+DAA+D;IAC/D,0DAA0D;IAC1D,6DAA6D;IAC7D,4DAA4D;CAC/D;;AAED,UAAU;AACV;IACI,eAAe;IACf,0BAA0B;CAC7B;;AAED;IACI,oBAAoB;CACvB;;AAED;IACI,oBAAoB;CACvB;;AAED,WAAW;AACX;IACI,eAAe;IACf,0BAA0B;CAC7B;;AAED;IACI,oBAAoB;CACvB;;AAED;IACI,oBAAoB;CACvB;;AAED,SAAS;AACT;IACI,eAAe;IACf,0BAA0B;CAC7B;;AAED;IACI,oBAAoB;CACvB;;AAED;IACI,oBAAoB;CACvB;;AAED,WAAW;AACX;IACI,YAAY;IACZ,uBAAuB;CAC1B;;AAED;IACI,iBAAiB;CACpB;;AAED;IACI,iBAAiB;CACpB;;AAED;;;;IAII,0BAA0B;IAC1B,YAAY;CACf;;AAED;;;;IAII,0BAA0B;IAC1B,YAAY;IACZ,0BAA0B;IAC1B,cAAc;CACjB","file":"jquery.filer-dragdropbox-theme.css","sourcesContent":["/*!\n * CSS jQuery.filer\n * Theme: DragDropBox\n * Copyright (c) 2015 CreativeDream\n * Version: 1.0.4 (29-Oct-2015)\n*/\n\n/*-------------------------\n\tInput\n-------------------------*/\n.jFiler-input-dragDrop {\n    display: block;\n    width: 343px;\n    margin: 0 auto 25px auto;\n    padding: 25px;\n    color: #8d9499;\n    color: #97A1A8;\n    background: #fff;\n    border: 2px dashed #C8CBCE;\n    text-align: center;\n    -webkit-transition: box-shadow 0.3s,\n                        border-color 0.3s;\n    -moz-transition: box-shadow 0.3s,\n                        border-color 0.3s;\n    transition: box-shadow 0.3s,\n                        border-color 0.3s;\n}\n\n.jFiler.dragged .jFiler-input-dragDrop {\n    border-color: #aaa;\n    box-shadow: inset 0 0 20px rgba(0,0,0,.08);\n}\n\n.jFiler.dragged .jFiler-input-dragDrop * {\n    pointer-events: none;\n}\n\n.jFiler.dragged .jFiler-input-icon {\n    -webkit-transform: rotate(180deg);\n    -ms-transform: rotate(180deg);\n    transform: rotate(180deg);\n}\n\n.jFiler.dragged .jFiler-input-text,\n.jFiler.dragged .jFiler-input-choose-btn {\n    filter: alpha(opacity=30);\n    opacity: 0.3;\n}\n\n.jFiler-input-dragDrop .jFiler-input-icon {\n    font-size: 48px;\n    margin-top: -10px;\n    -webkit-transition: all 0.3s ease;\n    -moz-transition: all 0.3s ease;\n    transition: all 0.3s ease;\n}\n\n.jFiler-input-text h3 {\n    margin: 0;\n    font-size: 18px;\n}\n\n.jFiler-input-text span {\n    font-size: 12px;\n}\n\n.jFiler-input-choose-btn {\n    display: inline-block;\n    padding: 8px 14px;\n    outline: none;\n    cursor: pointer;\n    text-decoration: none;\n    text-align: center;\n    white-space: nowrap;\n    font-size: 12px;\n    font-weight: bold;\n    color: #8d9496;\n    border-radius: 3px;\n    border: 1px solid #c6c6c6;\n    vertical-align: middle;\n    background-color: #fff;\n    box-shadow: 0px 1px 5px rgba(0,0,0,0.05);\n    -webkit-transition: all 0.2s;\n    -moz-transition: all 0.2s;\n    transition: all 0.2s;\n}\n\n.jFiler-input-choose-btn:hover,\n.jFiler-input-choose-btn:active {\n    color: inherit;\n}\n\n.jFiler-input-choose-btn:active {\n    background-color: #f5f5f5;\n}\n\n/* gray */\n.jFiler-input-choose-btn.gray {\n    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fcfcfc),to(#f5f5f5));\n    background-image: -webkit-linear-gradient(top,#fcfcfc,#f5f5f5);\n    background-image: -o-linear-gradient(top,#fcfcfc,#f5f5f5);\n    background-image: linear-gradient(to bottom,#fcfcfc,#f5f5f5);\n    background-image: -moz-linear-gradient(top,#fcfcfc,#f5f5f5);\n}\n\n.jFiler-input-choose-btn.gray:hover {\n    filter: alpha(opacity=87);\n    opacity: 0.87;\n}\n\n.jFiler-input-choose-btn.gray:active {\n    background-color: #f5f5f5;\n    background-image: -webkit-gradient(linear,0 0,0 100%,from(#f5f5f5),to(#fcfcfc));\n    background-image: -webkit-linear-gradient(top,#f5f5f5,#fcfcfc);\n    background-image: -o-linear-gradient(top,#f5f5f5,#fcfcfc);\n    background-image: linear-gradient(to bottom,#f5f5f5,#fcfcfc);\n    background-image: -moz-linear-gradient(top,#f5f5f5,#fcfcfc);\n}\n\n/* blue */\n.jFiler-input-choose-btn.blue {\n    color: #008BFF;\n    border: 1px solid #008BFF;\n}\n\n.jFiler-input-choose-btn.blue:hover {\n    background: #008BFF;\n}\n\n.jFiler-input-choose-btn.blue:active {\n    background: #008BFF;\n}\n\n/* green */\n.jFiler-input-choose-btn.green {\n    color: #27ae60;\n    border: 1px solid #27ae60;\n}\n\n.jFiler-input-choose-btn.green:hover {\n    background: #27ae60;\n}\n\n.jFiler-input-choose-btn.green:active {\n    background: #27ae60;\n}\n\n/* red */\n.jFiler-input-choose-btn.red {\n    color: #ed5a5a;\n    border: 1px solid #ed5a5a;\n}\n\n.jFiler-input-choose-btn.red:hover {\n    background: #ed5a5a;\n}\n\n.jFiler-input-choose-btn.red:active {\n    background: #E05252;\n}\n\n/* black */\n.jFiler-input-choose-btn.black {\n    color: #555;\n    border: 1px solid #555;\n}\n\n.jFiler-input-choose-btn.black:hover {\n    background: #555;\n}\n\n.jFiler-input-choose-btn.black:active {\n    background: #333;\n}\n\n.jFiler-input-choose-btn.blue:hover,\n.jFiler-input-choose-btn.green:hover,\n.jFiler-input-choose-btn.red:hover,\n.jFiler-input-choose-btn.black:hover {\n    border-color: transparent;\n    color: #fff;\n}\n\n.jFiler-input-choose-btn.blue:active,\n.jFiler-input-choose-btn.green:active,\n.jFiler-input-choose-btn.red:active,\n.jFiler-input-choose-btn.black:active {\n    border-color: transparent;\n    color: #fff;\n    filter: alpha(opacity=87);\n    opacity: 0.87;\n}"],"sourceRoot":"webpack://"}]);
+
+	// exports
+
+
+/***/ },
+/* 28 */
 /***/ function(module, exports) {
 
 	// Muaz Khan     - www.MuazKhan.com
@@ -13355,7 +13445,7 @@ var monkeyUI =
 
 
 /***/ },
-/* 27 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function() {

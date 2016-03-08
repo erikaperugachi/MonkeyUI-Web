@@ -18,6 +18,9 @@ module.exports = class MUIMessage{
 
         if(mokMessage.params){ 
             this.length = mokMessage.params.length;
+            this.filesize = mokMessage.params.size;
+            this.filename = mokMessage.params.name;
+            this.filetype = mokMessage.params.type;
         }else{
             this.length = 15;
         }
@@ -33,6 +36,10 @@ module.exports = class MUIMessage{
 
         this.setDataSource = function(dataSource){
             this.dataSource = dataSource;
+        }
+
+        this.setFilename = function(filename){
+            this.filename = filename;
         }
 
         this.isEncrypted = function(){
