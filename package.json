@@ -27,6 +27,7 @@
     "babel-preset-es2015": "*",
     "css-loader": "^0.23.1",
     "file-loader": "^0.8.5",
+    "font-awesome": "^4.5.0",
     "jquery": "^2.2.1",
     "jquery.filer": "^1.0.4",
     "style-loader": "^0.13.0",
