@@ -390,6 +390,7 @@ var monkeyUI = new function(){
             var audio = document.getElementById('audio_'+timestampPrev);
             if (audio != null)
                 audio.pause();
+            mediaRecorder = null;
         });
 
         $("#attach-file").filer({
