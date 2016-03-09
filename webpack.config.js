@@ -4,7 +4,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     //publicPath: "dist/",
-    publicPath: 'monkeyui/dist/',
+    publicPath: 'https://messenger.criptext.com/monkeyui/dist/',
     filename: 'monkeyUI.js',
     library: "monkeyUI"
   },
