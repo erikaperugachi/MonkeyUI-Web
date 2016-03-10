@@ -35,7 +35,7 @@ var monkeyUI =
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "https://messenger.criptext.com/monkeyui/dist/";
+/******/ 	__webpack_require__.p = "monkeyui/dist/";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -140,7 +140,16 @@ var monkeyUI =
 	    this.contentIntroApp = '#app-intro';
 	    this.user;
 
+	    var FULLSCREEN = 'fullscreen';
+	    var CLASSIC = 'classic';
+	    var INLINE, SIDEBAR;
+
 	    var FULLSIZE = 'fullsize';
+	    var PARTIALSIZE = 'partialsize';
+
+	    var TAB = 'tab';
+	    var ICON = 'icon';
+
 	    var STANDARD = 'standard';
 	    var KNOB = 'knob';
 
@@ -151,11 +160,16 @@ var monkeyUI =
 	    this.input.isSendButton = true;
 	    this.input.isEphemeralButton = true;
 	    this.screen = {};
-	    this.screen.mode = FULLSIZE;
-	    this.screen.width = undefined;
-	    this.screen.height = undefined;
+	    this.screen.type = FULLSCREEN;
+	    this.screen.data = {};
+	    this.screen.data.mode = FULLSIZE;
+	    this.screen.data.width = undefined;
+	    this.screen.data.height = undefined;
+	    this.screen.data.openButton = TAB;
 	    this.audio = {};
 	    this.audio.type = KNOB;
+	    this.form = false;
+	    this.login = false;
 
 	    this.setChat = function (conf) {
 	        monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
@@ -163,19 +177,31 @@ var monkeyUI =
 	        monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
 	        monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
 	        monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
-	        monkeyUI.screen.mode = conf.screen.mode == undefined ? FULLSIZE : conf.screen.mode;
-	        monkeyUI.screen.width = conf.screen.width;
-	        monkeyUI.screen.height = conf.screen.height;
+	        monkeyUI.screen.type = conf.screen.type == undefined ? FULLSCREEN : conf.screen.type;
+	        if (monkeyUI.screen.type == FULLSCREEN) {
+	            monkeyUI.screen.data.mode = FULLSIZE;
+	        } else if (monkeyUI.screen.type == CLASSIC) {
+	            monkeyUI.screen.data.mode = PARTIALSIZE;
+	            monkeyUI.screen.data.width = conf.screen.data.width;
+	            monkeyUI.screen.data.height = conf.screen.data.height;
+	            monkeyUI.screen.data.openButton = conf.screen.data.openButton == undefined ? TAB : conf.screen.data.openButton;
+	        }
+	        monkeyUI.screen.data.width = conf.screen.data.width;
+	        monkeyUI.screen.data.height = conf.screen.data.height;
 	        monkeyUI.audio.type = conf.audio.type == undefined ? STANDARD : conf.audio.type;
+	        monkeyUI.form = conf.form == undefined ? false : conf.form;
 	    };
 
 	    this.drawScene = function (content) {
 	        if ($('.wrapper-out').length <= 0) {
 	            var _scene = '';
-	            if (this.screen.width != undefined && this.screen.height != undefined) {
-	                _scene = '<div class="wrapper-out ' + this.screen.mode + '" style="width: ' + this.screen.width + '; height:' + this.screen.height + ';">';
+	            if (this.screen.data.width != undefined && this.screen.data.height != undefined) {
+	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '" style="width: ' + this.screen.data.width + '; height:25px;">';
 	            } else {
-	                _scene = '<div class="wrapper-out ' + this.screen.mode + '">';
+	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '">';
+	            }
+	            if (this.screen.type == CLASSIC || this.screen.type == SIDEBAR) {
+	                _scene += '<div class="tab">' + '<div id="w-max" class="appear"></div>' + '<div id="w-min" class="disappear"></div>' + '</div>';
 	            }
 	            _scene += '<div class="wrapper-in">' + '<div id="content-connection"></div>' + '<div id="content-app" class="disappear">';
 	            if (this.isConversationList) {
@@ -186,11 +212,55 @@ var monkeyUI =
 	            $(content).append(_scene);
 	            drawLoading(this.contentConnection);
 	        } else {
-	            $('.wrapper-out').addClass(this.screen.mode);
+	            $('.wrapper-out').addClass(this.screen.data.mode);
 	        }
+	        initOptionsOutWindow(this.screen.data.height, this.form);
 	        drawHeaderUserSession(this.contentApp + ' aside');
-	        drawContentConversation(this.contentConversationWindow);
+	        drawContentConversation(this.contentConversationWindow, this.screen.type);
 	        drawInput(this.contentConversationWindow, this.input);
+	    };
+
+	    function initOptionsOutWindow(height, isForm) {
+	        $("#w-max").click(function () {
+	            $('.wrapper-out').height(height);
+	            if (isForm && !monkeyUI.getLogin()) {
+	                $("#w-min").removeClass('disappear');
+	                $("#w-min").addClass('appear');
+	                $("#w-max").removeClass('appear');
+	                $("#w-max").addClass('disappear');
+	            } else if (monkeyUI.getLogin()) {
+	                monkeyUI.disappearOptionsOutWindow();
+	            }
+	        });
+	        $("#w-min").click(function () {
+	            $('.wrapper-out').height($('.tab').height());
+	            $("#w-min").addClass('disappear');
+	            $("#w-min").removeClass('appear');
+	            $("#w-max").addClass('appear');
+	            $("#w-max").removeClass('disappear');
+	        });
+	    }
+
+	    function initOptionInWindow() {
+	        $("#w-min-in").click(function () {
+	            $('.wrapper-out').height($('.tab').height());
+	            $('.tab').addClass('appear');
+	            $('.tab').removeClass('disappear');
+
+	            $("#w-min").addClass('disappear');
+	            $("#w-min").removeClass('appear');
+	            $("#w-max").addClass('appear');
+	            $("#w-max").removeClass('disappear');
+	        });
+	    }
+
+	    this.disappearOptionsOutWindow = function () {
+	        $('.tab').addClass('disappear');
+	        $('.wrapper-out').removeClass('classic');
+	    };
+
+	    this.getLogin = function () {
+	        return this.login;
 	    };
 
 	    function drawLoading(contentConnection) {
@@ -203,9 +273,14 @@ var monkeyUI =
 	        $(content).prepend(_html);
 	    }
 
-	    function drawContentConversation(content) {
-	        var _html = '<div id="app-intro"><div></div></div>' + '<header id="conversation-selected-header">' + '<div id="conversation-selected-image">' + '<img src="">' + '</div>' + '<div id="conversation-selected-description">' + '<span id="conversation-selected-name"></span>' + '<span id="conversation-selected-status"></span>' + '</div>' + '</header>' + '<div id="chat-timeline"></div>';
+	    function drawContentConversation(content, screenType) {
+	        var _html = '<div id="app-intro"><div></div></div>' + '<header id="conversation-selected-header">' + '<div id="conversation-selected-image">' + '<img src="">' + '</div>' + '<div id="conversation-selected-description">' + '<span id="conversation-selected-name"></span>' + '<span id="conversation-selected-status"></span>' + '</div>';
+	        if (screenType == CLASSIC || screenType == SIDEBAR) {
+	            _html += '<div class="content-options">' + '<div id="w-min-in"></div>' + '<div id="w-close"></div>' + '</div>';
+	        }
+	        _html += '</header>' + '<div id="chat-timeline"></div>';
 	        $(content).append(_html);
+	        initOptionInWindow();
 	    }
 
 	    this.stopLoading = function () {
@@ -250,7 +325,7 @@ var monkeyUI =
 
 	        var _html = '<div id="chat-input">' + '<div id="divider-chat-input"></div>';
 	        if (input.isAttachButton) {
-	            _html += '<div class="button-input">' + '<button id="button-attach" class="button-icon"></button>' + '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">' + '</div>' + '<div class="' + monkeyUI.screen.mode + ' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
+	            _html += '<div class="button-input">' + '<button id="button-attach" class="button-icon"></button>' + '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">' + '</div>' + '<div class="' + monkeyUI.screen.data.mode + ' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
 	        }
 
 	        if (input.isAudioButton) {
@@ -260,7 +335,7 @@ var monkeyUI =
 	        _html += '<textarea id="message-text-input" class="textarea-input" placeholder="Write a secure message"></textarea>';
 
 	        if (input.isAudioButton) {
-	            _html += '<div id="record-area" class="disappear">' + '<div class="record-preview-area">' + '<div id="button-action-record">' + '<button id="button-start-record" class="blink"></button>' + '</div>' + '<div id="time-recorder" class="blink"><span id="minutes">00</span><span>:</span><span id="seconds">00</span></div>' + '</div>' + '</div>';
+	            _html += '<div id="record-area" class="disappear">' + '<div class="record-preview-area">' + '<div id="button-action-record">' + '<button id="button-start-record" class="blink"></button>' + '</div>' + '<div id="time-recorder"><span id="minutes">00</span><span>:</span><span id="seconds">00</span></div>' + '</div>' + '</div>';
 	        }
 
 	        if (input.isSendButton) {
