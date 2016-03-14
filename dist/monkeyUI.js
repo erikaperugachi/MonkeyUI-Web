@@ -173,10 +173,14 @@ var monkeyUI =
 
 	    this.setChat = function (conf) {
 	        monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
-	        monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
-	        monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
-	        monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
-	        monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? true : conf.input.showEphemeralButton;
+	        if (conf.input != undefined) {
+	            monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
+	            monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
+	            monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
+	            monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? false : conf.input.showEphemeralButton;
+	        } else {
+	            monkeyUI.input.isEphemeralButton = false;
+	        }
 	        monkeyUI.screen.type = conf.screen.type == undefined ? FULLSCREEN : conf.screen.type;
 	        if (monkeyUI.screen.type == FULLSCREEN) {
 	            monkeyUI.screen.data.mode = FULLSIZE;
@@ -192,7 +196,7 @@ var monkeyUI =
 	        monkeyUI.form = conf.form == undefined ? false : conf.form;
 	    };
 
-	    this.drawScene = function (content) {
+	    this.drawScene = function () {
 	        if ($('.wrapper-out').length <= 0) {
 	            var _scene = '';
 	            if (this.screen.data.width != undefined && this.screen.data.height != undefined) {
@@ -200,8 +204,10 @@ var monkeyUI =
 	            } else {
 	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '">';
 	            }
-	            if (this.screen.type == CLASSIC || this.screen.type == SIDEBAR) {
+	            if (this.screen.type == CLASSIC) {
 	                _scene += '<div class="tab">' + '<div id="w-max" class="appear"></div>' + '<div id="w-min" class="disappear"></div>' + '</div>';
+	            } else if (this.screen.type == SIDEBAR) {
+	                _scene += '<div class="circle-icon">' + '<div id="w-open" class="appear"></div>' + '</div>';
 	            }
 	            _scene += '<div class="wrapper-in">' + '<div id="content-connection"></div>' + '<div id="content-app" class="disappear">';
 	            if (this.isConversationList) {
@@ -209,7 +215,7 @@ var monkeyUI =
 	            }
 	            var _class = this.isConversationList ? 'conversation-with' : 'conversation-only';
 	            _scene += '<section id="conversation-window" class="' + _class + '">' + '</section>' + '</div>' + '</div>' + '</div>';
-	            $(content).append(_scene);
+	            $('body').append(_scene);
 	            drawLoading(this.contentConnection);
 	        } else {
 	            $('.wrapper-out').addClass(this.screen.data.mode);
@@ -218,6 +224,7 @@ var monkeyUI =
 	        drawHeaderUserSession(this.contentApp + ' aside');
 	        drawContentConversation(this.contentConversationWindow, this.screen.type);
 	        drawInput(this.contentConversationWindow, this.input);
+	        monkeyUI.stopLoading();
 	    };
 
 	    function initOptionsOutWindow(height, isForm) {
@@ -228,6 +235,8 @@ var monkeyUI =
 	                $("#w-min").addClass('appear');
 	                $("#w-max").removeClass('appear');
 	                $("#w-max").addClass('disappear');
+	            } else if (!isForm && !monkeyUI.getLogin()) {
+	                $(monkeyUI).trigger('quickStart');
 	            } else if (monkeyUI.getLogin()) {
 	                monkeyUI.disappearOptionsOutWindow();
 	            }

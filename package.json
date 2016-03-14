@@ -1,10 +1,10 @@
 {
   "name": "monkeyui",
   "version": "0.0.1",
-  "description": "UI Library for chat",
-  "main": "ChatUI.js",
+  "description": "UI Library for monkey chat",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --inline --content-base ."
   },
   "repository": {
     "type": "git",
@@ -16,23 +16,26 @@
     "sdk",
     "UI"
   ],
-  "author": "Criptext <gianni@criptext.com>",
+  "author": "Criptext INC.",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Criptext/MonkeyUI-Web/issues"
   },
   "homepage": "https://github.com/Criptext/MonkeyUI-Web#readme",
   "dependencies": {
+    "font-awesome": "^4.5.0",
+    "jquery": "^2.2.1",
+    "jquery.filer": "^1.0.4"
+  },
+  "devDependencies": {
     "babel-loader": "^6.0.0",
     "babel-preset-es2015": "*",
     "css-loader": "^0.23.1",
     "file-loader": "^0.8.5",
-    "font-awesome": "^4.5.0",
-    "jquery": "^2.2.1",
-    "jquery.filer": "^1.0.4",
     "style-loader": "^0.13.0",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1",
     "worker-loader": "^0.7.0"
   }
 }

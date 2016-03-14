@@ -62,6 +62,7 @@ var secondsBubbleLabel;
 var totalSeconds = 0;
 
 var audioMessageOldId;
+var currentConversationOnlineState; // store the last online state while appear typing state
 
 var globalAudioPreview;
 
@@ -115,10 +116,14 @@ var monkeyUI = new function(){
 
     this.setChat = function(conf){
         monkeyUI.isConversationList = conf.showConversationList == undefined ? true : conf.showConversationList;
-        monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
-        monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
-        monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
-        monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? false : conf.input.showEphemeralButton;
+        if(conf.input != undefined){
+            monkeyUI.input.isAttachButton = conf.input.showAttachButton == undefined ? true : conf.input.showAttachButton;
+            monkeyUI.input.isAudioButton = conf.input.showAudioButton == undefined ? true : conf.input.showAudioButton;
+            monkeyUI.input.isSendButton = conf.input.showSendButton == undefined ? true : conf.input.showSendButton;
+            monkeyUI.input.isEphemeralButton = conf.input.showEphemeralButton == undefined ? false : conf.input.showEphemeralButton;   
+        }else{
+            monkeyUI.input.isEphemeralButton = false;
+        }
         monkeyUI.screen.type = conf.screen.type == undefined ? FULLSCREEN : conf.screen.type;
         if(monkeyUI.screen.type == FULLSCREEN){
             monkeyUI.screen.data.mode = FULLSIZE;
@@ -186,8 +191,8 @@ var monkeyUI = new function(){
                 $("#w-min").addClass('appear');
                 $("#w-max").removeClass('appear');
                 $("#w-max").addClass('disappear');
-            }else if(!isForm){
-                monkeyUI.disappearOptionsOutWindow();
+            }else if(!isForm && !monkeyUI.getLogin()){
+                $(monkeyUI).trigger('quickStart');
             }else if(monkeyUI.getLogin()){
                 monkeyUI.disappearOptionsOutWindow();
             }
@@ -1676,114 +1681,6 @@ var monkeyUI = new function(){
     }
 }();
 
-
-
-// monkeyUI.protocolType.defineDiv = function(wrapperOut, wrapperIn, contentConversationList, contentConversationWindow){
-//     this.wrapperOut = wrapperOut;
-//     this.wrapperIn = wrapperIn;
-//     this.contentConversationList = contentConversationList;
-//     this.contentConversationWindow = contentConversationWindow;
-// }
-
-
-
-
-
-
-
-
-
-
-function drawAttachMessageBubble(file_,fileName_,encryption_,compression_,ephimero_,isOutgoing,conversationId,messageId_,datetime_) {
-    var _bubble='';
-
-    if (isOutgoing == 0) { // incoming
-        if(fileName_ == 'undefined')
-            fileName_ = '';
-        if (ephimero_ == 0) {
-            _bubble = '<div id="'+messageId_+'" class="message-line">'+
-                '<div class="message-detail">'+
-                    '<span class="message-hour">'+defineTime(datetime_*1000)+'</span>'+
-                '</div>'+
-                '<div class="bubble-attach-in">'+
-                    '<div class="textMessage textMessageClient textMessageClientFile" id="bubble'+messageId_+'" >'+
-                        '<div id="attachBubble'+messageId_+'" class="link-content">'+
-                        '</div>'+
-                    '</div>'+
-                '</div>'+
-            '</div>';
-            $('#chat-timeline-conversation-'+conversationId).append(_bubble);
-            updateNotification('File Message',conversationId);
-            //drawFileTypeIntoBubble(6,file_, messageId_,fileName_);
-        }else{
-        }
-        
-    } else if (isOutgoing == 1){ // outgoing
-        $('#chat-timeline-conversation-'+conversationId).append('<div class="message-line">'+
-                '<div class="message-detail">'+
-                    '<span class="message-hour">'+defineTime(datetime_)+'</span>'+
-                '</div>'+
-                '<div id="'+messageId_+'" class="bubble-attach-out bubble-out">'+
-                    '<div class="textMessage textMessageClient textMessageClientFile" id="bubble'+messageId_+'" >'+
-                        '<div id="attachBubble'+messageId_+'" class="link-content" ">'+
-                            '<div id="jqmeter-container'+messageId_+'"> '+file_.name+'</div>'+
-                        '</div>'+
-                    '</div>'+
-                    '<div class="message-status status-load">'+
-                        '<div class="message-time" style="display: none;">'+datetime_+'</div>'+
-                    '</div>'+
-                '</div>'+
-            '</div>');
-        drawFileTypeIntoBubble(6,file_,messageId_,fileName_);
-    }
-
-    scrollToDown();
-}
-
-function drawFileTypeIntoBubble(fileType_,file, messageId_, fileName) {
-    // if (fileName=='undefined')
-    //     fileName=files.name;
-
-    $('#attachBubble'+messageId_).remove();
-
-    if (fileType_ == 6) {
-        $('#bubble'+messageId_).addClass('icon-image');
-
-        // var html = '<img class="image-upload-preview" src="./images/img-icon.png" alt="your image" />';
-        // $('#bubble'+messageId_).last().append(html);
-    }else{
-        var html='<div class="link-content"> <table><tr>';
-
-        switch(fileType_){
-            case 1:
-                html=html+'<td><img class="image-upload-preview" src="./images/word-icon.png" alt="your image" /></td> ';
-                break;
-            case 2:
-                html=html+'<td><img class="image-upload-preview" src="./images/pdf-icon.png" alt="your image" /></td> ';
-                break;
-            case 3:
-                html=html+'<td><img class="image-upload-preview" src="./images/xls-icon.png" alt="your image" /> </td>';
-                break;
-            case 4:
-                html=html+'<td><img class="image-upload-preview" src="./images/ppt-icon.png" alt="your image" /></td> ';
-                break;
-            case 6:
-                html=html+'<td><img class="image-upload-preview" src="./images/img-icon.png" alt="your image" /> </td>';
-                break;
-        }
-
-        html=html +'<td> <div class="attach-info">'+
-                        'Secure Attachment <br><span>' + fileName + '</span>'+
-                    '</div></td>'+
-                    '<td><a href="'+file+'" download="'+fileName+'" >'+
-                        '<img class="download_icon" src="./images/attach.png" alt="your image" /></a>'+
-                    '</td>'+
-                '</tr></table></div>';
-
-        $('#bubble'+messageId_).last().append(html);
-    }
-}
-
 function defineTimer(duration){
     var _minutes;
     var _seconds;
@@ -1806,8 +1703,6 @@ function defineTime(time){
     
     return ("0" + nhour).slice(-2)+":"+("0" + nmin).slice(-2)+ap+"";
 }
-
-
 
 function getConversationIdHandling(conversationId){
     var result;
