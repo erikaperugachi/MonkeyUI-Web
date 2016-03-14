@@ -1,4 +1,7 @@
 var path = require('path');
+var webpack = require('webpack');
+var uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
+
 module.exports = { 
   entry: path.join(__dirname, 'main.js'),
   
@@ -29,10 +32,14 @@ module.exports = {
           presets: ['es2015']
         }
       },
+      //{ test: /\.css$/, loader: "style!css" },
+      //{ test: /\.css$/, loader: 'style-loader!css-loader' },
+      //{ test: /\.css$/, loader: 'style-loader!css-loader?modules' }
       {
         test: /\.css$/,
         loader: 'style!css?sourceMap'
-      }, {
+      },
+       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
         loader: "url?name=[name].[ext]&limit=10000&mimetype=application/font-woff"
       }, {
@@ -47,6 +54,15 @@ module.exports = {
       }, {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
         loader: "url?name=[name].[ext]&limit=10000&mimetype=image/svg+xml"
+      }, {
+        test: /\.(otf)/,
+        loader: 'url-loader?limit=8192'
+      }, { 
+        test:   /\.(png|jpe?g|svg)$/i,
+        loader: 'url',
+        query: {
+          limit: 10000,
+        }
       }
     ]
   },
@@ -56,5 +72,13 @@ module.exports = {
       filename: "ffmpeg.worker.js",
       chunkFilename: "[id].ffmpeg.worker.js"
     }
-  }
+  },
+
+  plugins: [
+    new uglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    })
+  ]
 };

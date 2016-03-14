@@ -2,6 +2,7 @@ require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/js/jquery.knob.js');
 
 require('font-awesome/css/font-awesome.css');
+require('./src/styles/style.css');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
