@@ -18,9 +18,7 @@ module.exports = class MUIMessage{
 
         if(mokMessage.params){ 
             this.length = mokMessage.params.length;
-            this.filesize = mokMessage.params.size;
-            this.filename = mokMessage.params.name;
-            this.filetype = mokMessage.params.type;
+            this.eph = mokMessage.params.eph == undefined ? 0 : mokMessage.params.eph;
         }else{
             this.length = 15;
         }
@@ -29,7 +27,9 @@ module.exports = class MUIMessage{
         this.encr = mokMessage.props.encr;
         this.cmpr = mokMessage.props.cmpr;
         this.ext = mokMessage.props.ext;
-        this.eph = mokMessage.params.eph == undefined ? 0 : mokMessage.params.eph;
+        this.filesize = mokMessage.props.size;
+        this.filename = mokMessage.props.filename;
+        this.mimetype = mokMessage.props.mime_type;
 
         this.senderName = undefined;
         this.senderColor = undefined;
