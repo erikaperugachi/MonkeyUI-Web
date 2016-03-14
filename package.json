@@ -4,7 +4,7 @@
   "description": "UI Library for monkey chat",
   "main": "main.js",
   "scripts": {
-    "start": "webpack-dev-server --inline --content-base ."
+    "start": "webpack"
   },
   "repository": {
     "type": "git",
