@@ -7,7 +7,6 @@ require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
 require('jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css');
 
-
 //require('./src/jquery.knob.min.js');
 
 import MUIUser from './libs/MUIUser.js';
