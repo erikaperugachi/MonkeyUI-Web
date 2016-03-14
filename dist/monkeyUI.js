@@ -123,7 +123,6 @@ var monkeyUI =
 	var currentConversationOnlineState; // store the last online state while appear typing state
 
 	var globalAudioPreview;
-
 	var timestampPrev;
 
 	// Variable to send message
@@ -201,12 +200,12 @@ var monkeyUI =
 	        if ($('.wrapper-out').length <= 0) {
 	            var _scene = '';
 	            if (this.screen.data.width != undefined && this.screen.data.height != undefined) {
-	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '" style="width: ' + this.screen.data.width + '; height:25px;">';
+	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '" style="width: ' + this.screen.data.width + '; height:30px;">';
 	            } else {
 	                _scene += '<div class="wrapper-out ' + this.screen.data.mode + ' ' + this.screen.type + '">';
 	            }
 	            if (this.screen.type == CLASSIC) {
-	                _scene += '<div class="tab">' + '<div id="w-max" class="appear"></div>' + '<div id="w-min" class="disappear"></div>' + '</div>';
+	                _scene += '<div class="tab">' + '<span> Want to know more? </span>' + '<div id="w-max" class="appear"></div>' + '<div id="w-min" class="disappear"></div>' + '</div>';
 	            } else if (this.screen.type == SIDEBAR) {
 	                _scene += '<div class="circle-icon">' + '<div id="w-open" class="appear"></div>' + '</div>';
 	            }
