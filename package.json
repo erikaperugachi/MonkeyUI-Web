@@ -23,9 +23,11 @@
   },
   "homepage": "https://github.com/Criptext/MonkeyUI-Web#readme",
   "dependencies": {
+    "fileapi": "^2.0.20",
     "font-awesome-webpack": "0.0.4",
     "jquery": "^2.2.1",
-    "jquery.filer": "^1.0.4"
+    "jquery.filer": "^1.0.4",
+    "msr": "^1.2.9"
   },
   "devDependencies": {
     "babel-loader": "^6.0.0",

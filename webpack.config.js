@@ -69,5 +69,13 @@ module.exports = {
       filename: "ffmpeg.worker.js",
       chunkFilename: "[id].ffmpeg.worker.js"
     }
-  }
+  },
+
+  // plugins: [
+  //   new uglifyJsPlugin({
+  //     compress: {
+  //       warnings: false
+  //     }
+  //   })
+  // ]
 };
