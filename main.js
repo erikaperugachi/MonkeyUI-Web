@@ -147,7 +147,7 @@ var monkeyUI = new function(){
             }
             if(this.screen.type == CLASSIC){
                 _scene += '<div class="tab">'+
-                            '<span tablabel> Want to know more? </span>'+
+                            '<span class="tablabel> Want to know more? </span>'+
                             '<div id="w-max" class="appear"></div>'+
                             '<div id="w-min" class="disappear"></div>'+
                         '</div>';
