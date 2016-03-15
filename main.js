@@ -1,7 +1,7 @@
 require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/js/jquery.knob.js');
 
-require('font-awesome/css/font-awesome.css');
+require('font-awesome-webpack');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
@@ -1617,6 +1617,7 @@ var monkeyUI = new function(){
                 audioCaptured.src = 'data:audio/mpeg;base64,'+_data;
                 audioCaptured.monkeyFileType = 1;
                 audioCaptured.oldId = audioMessageOldId;
+                audioCaptured.type = 'audio/mpeg';
                 $(monkeyUI).trigger('audioMessage', audioCaptured);
             } else if( evt.type =='progress' ){
                 var pr = evt.loaded/evt.total * 100;

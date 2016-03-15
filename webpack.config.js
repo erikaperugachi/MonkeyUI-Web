@@ -1,14 +1,13 @@
 var path = require('path');
 var webpack = require('webpack');
 var uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = { 
   entry: path.join(__dirname, 'main.js'),
   
   output: {
     path: path.join(__dirname, 'dist'),
-    publicPath: 'monkeyui/dist/',
+    publicPath: '/monkeyui/dist/',
     filename: 'monkeyUI.js',
     library: "monkeyUI"
   },
@@ -33,17 +32,10 @@ module.exports = {
           presets: ['es2015']
         }
       },
-      { 
+      {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+        loader: 'style!css?sourceMap'
       },
-      //{ test: /\.css$/, loader: "style!css" },
-      //{ test: /\.css$/, loader: 'style-loader!css-loader' },
-      //{ test: /\.css$/, loader: 'style-loader!css-loader?modules' }
-      // {
-      //   test: /\.css$/,
-      //   loader: 'style!css?sourceMap'
-      // },
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
         loader: "url?name=[name].[ext]&limit=10000&mimetype=application/font-woff"
@@ -77,14 +69,5 @@ module.exports = {
       filename: "ffmpeg.worker.js",
       chunkFilename: "[id].ffmpeg.worker.js"
     }
-  },
-
-  plugins: [
-    new uglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
-    new ExtractTextPlugin("styles.css")
-  ]
+  }
 };
