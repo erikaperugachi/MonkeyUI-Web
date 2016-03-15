@@ -1,1 +1,118 @@
-!function(t){function e(a){if(s[a])return s[a].exports;var o=s[a]={exports:{},id:a,loaded:!1};return t[a].call(o.exports,o,o.exports,e),o.loaded=!0,o.exports}var s={};return e.m=t,e.c=s,e.p="monkeyui/dist/",e(0)}([function(t,e){function s(t){postMessage({type:"stdout",data:t})}importScripts("../src/ffmpeg.js");var a=Date.now;onmessage=function(t){var e=t.data;if("command"===e.type){var o={print:s,printErr:s,files:e.files||[],arguments:e.arguments||[],TOTAL_MEMORY:e.TOTAL_MEMORY||!1};postMessage({type:"start",data:o.arguments.join(" ")}),postMessage({type:"stdout",data:"Received command: "+o.arguments.join(" ")+(o.TOTAL_MEMORY?".  Processing with "+o.TOTAL_MEMORY+" bits.":"")});var r=a(),n=ffmpeg_run(o),i=a()-r;postMessage({type:"stdout",data:"Finished processing (took "+i+"ms)"}),postMessage({type:"done",data:n,time:i})}},postMessage({type:"ready"})}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "/monkeyui/dist/";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports) {
+
+	// Simple ffmpeg web worker based on (https://github.com/bgrins/videoconverter.js/blob/master/demo/worker.js)
+
+	importScripts('../src/ffmpeg.js');
+
+	function print(text) {
+	    postMessage({
+	        'type' : 'stdout',
+	        'data' : text
+	    });
+	}
+
+	function printErr(text) {
+	    postMessage({
+	        'type' : 'stderr',
+	        'data' : text
+	    });
+	}
+	var now = Date.now;
+
+	onmessage = function(event) {
+
+	  var message = event.data;
+
+	  if (message.type === "command") {
+
+	    var Module = {
+	      print: print,
+	      printErr: print,
+	      files: message.files || [],
+	      arguments: message.arguments || [],
+	      TOTAL_MEMORY: message.TOTAL_MEMORY || false
+	      // Can play around with this option - must be a power of 2
+	      // TOTAL_MEMORY: 268435456
+	    };
+
+	    postMessage({
+	      'type' : 'start',
+	      'data' : Module.arguments.join(" ")
+	    });
+
+	    postMessage({
+	      'type' : 'stdout',
+	      'data' : 'Received command: ' +
+	                Module.arguments.join(" ") +
+	                ((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")
+	    });
+
+	    var time = now();
+	    var result = ffmpeg_run(Module);
+
+	    var totalTime = now() - time;
+	    postMessage({
+	      'type' : 'stdout',
+	      'data' : 'Finished processing (took ' + totalTime + 'ms)'
+	    });
+
+	    postMessage({
+	      'type' : 'done',
+	      'data' : result,
+	      'time' : totalTime
+	    });
+	  }
+	};
+
+	// ffmpeg loaded
+	postMessage({
+	    'type' : 'ready'
+	});
+
+
+/***/ }
+/******/ ]);

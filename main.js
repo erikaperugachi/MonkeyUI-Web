@@ -1,11 +1,13 @@
-require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/js/jquery.knob.js');
 
-require('font-awesome/css/font-awesome.css');
+require('font-awesome-webpack');
+
+require('fileapi/dist/FileAPI.min.js');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
 require('jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css');
+//require('msr/MediaStreamRecorder.js');
 
 //require('./src/jquery.knob.min.js');
 
@@ -23,6 +25,7 @@ window.MUIMessage = MUIMessage;
 // MediaStreamRecorder.js
 var MediaStreamRecorder = require('./src/MediaStreamRecorder.js').MediaStreamRecorder;
 window.StereoRecorder = require('./src/MediaStreamRecorder.js').StereoRecorder;
+
 
 // =================
 // ffmpegWorker.js
@@ -1496,11 +1499,6 @@ var monkeyUI = new function(){
             }
         }
     }
-
-    //if the browser can not record.. 
-    function onMediaError(e) {
-        console.error('media error', e);
-    }
     
     // if the browser can record, this is executed
     function onMediaSuccess(stream) {
@@ -1521,6 +1519,10 @@ var monkeyUI = new function(){
 
         refreshIntervalId = setInterval(setTime, 1000);//start recording timer
         mediaRecorder.start(99999999999);//starts recording
+    }
+
+    function onMediaError(e) {
+        console.error('media error', e);
     }
 
     function setTime(){
@@ -1617,6 +1619,7 @@ var monkeyUI = new function(){
                 audioCaptured.src = 'data:audio/mpeg;base64,'+_data;
                 audioCaptured.monkeyFileType = 1;
                 audioCaptured.oldId = audioMessageOldId;
+                audioCaptured.type = 'audio/mpeg';
                 $(monkeyUI).trigger('audioMessage', audioCaptured);
             } else if( evt.type =='progress' ){
                 var pr = evt.loaded/evt.total * 100;
