@@ -2,7 +2,6 @@ require('./bower_components/fileapi/dist/FileAPI.min.js');
 require('./bower_components/jquery-knob/js/jquery.knob.js');
 
 require('font-awesome/css/font-awesome.css');
-require('./src/styles/style.css');
 
 require('jquery.filer/js/jquery.filer.min.js');
 require('jquery.filer/css/jquery.filer.css');
@@ -148,7 +147,7 @@ var monkeyUI = new function(){
             }
             if(this.screen.type == CLASSIC){
                 _scene += '<div class="tab">'+
-                            '<span> Want to know more? </span>'+
+                            '<span tablabel> Want to know more? </span>'+
                             '<div id="w-max" class="appear"></div>'+
                             '<div id="w-min" class="disappear"></div>'+
                         '</div>';

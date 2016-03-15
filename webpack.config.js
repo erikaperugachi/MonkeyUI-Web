@@ -1,6 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 var uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = { 
   entry: path.join(__dirname, 'main.js'),
@@ -13,7 +14,7 @@ module.exports = {
   },
 
   externals: {
-      monkey:"monkey"
+    monkey:"monkey"
     //  on the global var jQuery
   },
 
@@ -32,14 +33,18 @@ module.exports = {
           presets: ['es2015']
         }
       },
+      { 
+        test: /\.css$/,
+        loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+      },
       //{ test: /\.css$/, loader: "style!css" },
       //{ test: /\.css$/, loader: 'style-loader!css-loader' },
       //{ test: /\.css$/, loader: 'style-loader!css-loader?modules' }
+      // {
+      //   test: /\.css$/,
+      //   loader: 'style!css?sourceMap'
+      // },
       {
-        test: /\.css$/,
-        loader: 'style!css?sourceMap'
-      },
-       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
         loader: "url?name=[name].[ext]&limit=10000&mimetype=application/font-woff"
       }, {
@@ -79,6 +84,7 @@ module.exports = {
       compress: {
         warnings: false
       }
-    })
+    }),
+    new ExtractTextPlugin("styles.css")
   ]
 };
