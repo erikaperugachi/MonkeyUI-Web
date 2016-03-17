@@ -26,7 +26,6 @@ window.MUIMessage = MUIMessage;
 var MediaStreamRecorder = require('./src/MediaStreamRecorder.js').MediaStreamRecorder;
 window.StereoRecorder = require('./src/MediaStreamRecorder.js').StereoRecorder;
 
-
 // =================
 // ffmpegWorker.js
 var Worker = require('worker!./src/ffmpegWorker.js');
@@ -141,6 +140,10 @@ var monkeyUI = new function(){
     }
 
     this.drawScene = function(){
+
+        var e = document.createElement("link");
+        e.href = "http://cdn.criptext.com/MonkeyUI/styles/chat1.css", e.type = "text/css", e.rel = "stylesheet", document.getElementsByTagName("head")[0].appendChild(e)
+
         if( $('.wrapper-out').length <= 0 ){
             var _scene = '';
             if(this.screen.data.width != undefined && this.screen.data.height != undefined){
@@ -313,14 +316,23 @@ var monkeyUI = new function(){
 
     function drawInput(content, input){
 
+        //drag & drop sizes
+        var dd_height = '';
+        var dd_width = '';
+
+        if (monkeyUI.screen.data.mode == PARTIALSIZE) {
+            dd_height = monkeyUI.screen.data.height;
+            dd_width = monkeyUI.screen.data.width;
+        }
+
         var _html = '<div id="chat-input">'+
             '<div id="divider-chat-input"></div>';
             if (input.isAttachButton) {
                 _html += '<div class="button-input">'+
                             '<button id="button-attach" class="button-icon"></button>'+
                             '<input type="file" name="attach" id="attach-file" style="display:none" accept=".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx, image/*">'+
-                        '</div>'+
-                        '<div class="'+monkeyUI.screen.data.mode+' jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
+                        '</div>';//+
+                        //'<div class="' + monkeyUI.screen.data.mode + ' jFiler-input-dragDrop" style="width:'+dd_width+'; height:'+dd_height+';"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drop files here</h3></div></div></div>';
             }
             
             if (input.isAudioButton) {
@@ -360,7 +372,7 @@ var monkeyUI = new function(){
                                 '</div>';
             }
             
-        _html += '</div>';
+        _html += '<div class="signature">Powered by <a class="signature-link" target="_blank" href="http://criptext.com/">Criptext</a></div></div>';
         $(content).append(_html);
         initInputFunctionality();
     }
@@ -487,48 +499,48 @@ var monkeyUI = new function(){
             mediaRecorder = null;
         });
 
-        $("#attach-file").filer({
-            limit: null,
-            maxSize: null,
-            extensions: null,
-            changeInput: '<div class="chat-drop-zone" ></div>',
-            showThumbs: true,
-            theme: "dragdropbox",
-            dragDrop: {
-                dragEnter: function () {
-                    console.log('file entered');
-                    $('.jFiler-input-dragDrop').show();
-                },
-                dragLeave: function () {
-                    console.log('file entered');
-                    $('.chat-drop-zone').hide();
-                    $('.jFiler-input-dragDrop').hide();
-                },
-                drop: function () {
-                    console.log('file entered');
-                    $('.chat-drop-zone').hide();
-                    $('.jFiler-input-dragDrop').hide();
-                },
-            },
-            files: null,
-            addMore: false,
-            clipBoardPaste: true,
-            excludeName: null,
-            beforeRender: null,
-            afterRender: null,
-            beforeShow: null,
-            beforeSelect: null,
-            onSelect: function(obj) {
-                // showChatInputFile();
-                catchUpFile(obj)
-            },
-            afterShow: null,
-            onEmpty: null,
-            options: null,
-            captions: {
-                drop: "Drop file here to Upload"
-            }
-        });
+        // $("#attach-file").filer({
+        //     limit: null,
+        //     maxSize: null,
+        //     extensions: null,
+        //     changeInput: '<div class="chat-drop-zone" ></div>',
+        //     showThumbs: true,
+        //     theme: "dragdropbox",
+        //     dragDrop: {
+        //         dragEnter: function () {
+        //             console.log('file entered');
+        //             $('.jFiler-input-dragDrop').show();
+        //         },
+        //         dragLeave: function () {
+        //             console.log('file entered');
+        //             $('.chat-drop-zone').hide();
+        //             $('.jFiler-input-dragDrop').hide();
+        //         },
+        //         drop: function () {
+        //             console.log('file entered');
+        //             $('.chat-drop-zone').hide();
+        //             $('.jFiler-input-dragDrop').hide();
+        //         },
+        //     },
+        //     files: null,
+        //     addMore: false,
+        //     clipBoardPaste: true,
+        //     excludeName: null,
+        //     beforeRender: null,
+        //     afterRender: null,
+        //     beforeShow: null,
+        //     beforeSelect: null,
+        //     onSelect: function(obj) {
+        //         // showChatInputFile();
+        //         catchUpFile(obj)
+        //     },
+        //     afterShow: null,
+        //     onEmpty: null,
+        //     options: null,
+        //     captions: {
+        //         drop: "Drop file here to Upload"
+        //     }
+        // });
     }
 
     document.addEventListener("dragenter", function( event ) {
@@ -707,7 +719,7 @@ var monkeyUI = new function(){
         liConversation.find('.conversation-state span').html(text);
         setNotification(conversationId);
 
-        if (currentConversationId != conversationId) {
+        if ($('#chat-timeline-conversation-'+conversationId).hasClass('appear')) {
             // counting notification existing badges 
 
             if (liConversation.find('.conversation-notification').length > 0) {
@@ -723,7 +735,7 @@ var monkeyUI = new function(){
     }
 
     function setNotification (conversationId) {
-        var liConversation =  $("#conversation-"+conversationId);
+        var liConversation =  $('#conversation'+conversationId);
         liConversation.find('.conversation-description span').addClass('bold-text');
     }
 
@@ -1390,6 +1402,15 @@ var monkeyUI = new function(){
         minutesBubbleLabel.innerHTML = ("0" + parseInt(durationTime/60)).slice(-2);
     }
 
+    function setWidgetMax(timestamp) {
+        audiobuble = document.getElementById("audio_" + timestamp);
+        var durationTime = Math.round(audiobuble.duration);
+        
+        max_range_value = document.getElementById("audio_range_" + timestamp);
+        max_range_value.setAttribute("max", ("0" + parseInt(durationTime / 60)).slice(-2));
+    }
+
+
     /***********************************************/
     /******************** VIEWER *******************/
     /***********************************************/
@@ -1482,6 +1503,7 @@ var monkeyUI = new function(){
     function scrollToDown(container){  
         $('#chat-timeline').animate({ scrollTop:100000000 }, 400); 
     }
+
     /***********************************************/
     /***************** RECORD AUDIO ****************/
     /***********************************************/
@@ -1681,7 +1703,7 @@ var monkeyUI = new function(){
 
         return message;
     }
-}();
+};
 
 function defineTimer(duration){
     var _minutes;
@@ -1716,5 +1738,5 @@ function getConversationIdHandling(conversationId){
     return result;
 }
 
-module.exports = monkeyUI;
+window.monkeyUI = monkeyUI;
 
