@@ -5,6 +5,8 @@
 // ______________________
 // MediaStreamRecorder.js
 
+var IsChrome;
+
 function MediaStreamRecorder(mediaStream) {
     if (!mediaStream) throw 'MediaStream is mandatory.';
 
